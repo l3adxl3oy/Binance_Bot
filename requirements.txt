@@ -1,0 +1,13 @@
+# Requirements for Advanced Scalping Bot with Intelligent Features
+
+# Core dependencies
+binance-connector>=3.0.0
+pandas>=1.5.0
+numpy>=1.23.0
+python-decouple>=3.8
+
+# Intelligent Features
+requests>=2.28.0  # For API calls (Fear & Greed Index, economic calendar)
+
+# Optional (if you want to use ta-lib instead of manual calculations)
+# TA-Lib>=0.4.0

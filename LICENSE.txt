@@ -1,0 +1,68 @@
+PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+Copyright (c) 2026 BinanceBot Professional. All rights reserved.
+
+IMPORTANT: READ CAREFULLY BEFORE USING THIS SOFTWARE
+
+This License Agreement ("Agreement") is a legal agreement between you (either an individual or a single entity) and BinanceBot Professional for the software product identified above, which includes computer software and may include associated media, printed materials, and online or electronic documentation ("Software").
+
+BY INSTALLING, COPYING, OR OTHERWISE USING THE SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT.
+
+1. GRANT OF LICENSE
+   This Software is licensed, not sold. Subject to your compliance with this Agreement, you are granted a limited, non-exclusive, non-transferable license to:
+   - Install and use the Software on a single computer or server
+   - Make one backup copy of the Software for archival purposes
+
+2. RESTRICTIONS
+   You may NOT:
+   - Modify, reverse engineer, decompile, or disassemble the Software
+   - Rent, lease, lend, sell, redistribute, or sublicense the Software
+   - Remove or alter any copyright, trademark, or proprietary notices
+   - Use the Software for any illegal purpose
+   - Share your license key or access credentials with others
+   - Create derivative works based on the Software
+
+3. INTELLECTUAL PROPERTY
+   The Software is protected by copyright laws and international treaty provisions. All title and intellectual property rights in and to the Software remain with BinanceBot Professional.
+
+4. TRADING DISCLAIMER
+   - Trading cryptocurrencies involves substantial risk of loss
+   - Past performance does NOT guarantee future results
+   - This Software is provided for educational and informational purposes
+   - You are solely responsible for all trading decisions
+   - The authors/vendors assume NO responsibility for trading losses
+   - You should never trade with money you cannot afford to lose
+
+5. WARRANTY DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. THE ENTIRE RISK ARISING OUT OF USE OR PERFORMANCE OF THE SOFTWARE REMAINS WITH YOU.
+
+6. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. THIS INCLUDES, BUT IS NOT LIMITED TO, TRADING LOSSES, LOST PROFITS, OR ANY CONSEQUENTIAL, INCIDENTAL, DIRECT, INDIRECT, SPECIAL, OR PUNITIVE DAMAGES.
+
+7. DATA AND PRIVACY
+   - You are responsible for the security of your API keys and credentials
+   - The Software does not collect or transmit personal data to third parties
+   - All trading operations are between you and Binance directly
+
+8. UPDATES AND SUPPORT
+   - Updates and support may be provided at the sole discretion of the licensor
+   - No guarantee of updates, bug fixes, or technical support is provided
+   - Support may be offered on a best-effort basis
+
+9. TERMINATION
+   This license is effective until terminated. Your rights under this license will terminate automatically without notice if you fail to comply with any term of this Agreement. Upon termination, you must destroy all copies of the Software.
+
+10. GOVERNING LAW
+    This Agreement shall be governed by and construed in accordance with the laws of the jurisdiction where the licensor is located, without regard to its conflict of law provisions.
+
+11. ENTIRE AGREEMENT
+    This Agreement constitutes the entire agreement between you and BinanceBot Professional relating to the Software and supersedes all prior or contemporaneous oral or written communications, proposals, and representations with respect to the Software.
+
+12. ACCEPTANCE
+    BY USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+
+---
+
+For questions about this license, please contact the software provider.
+
+REMEMBER: CRYPTOCURRENCY TRADING IS HIGH RISK. ONLY TRADE WITH CAPITAL YOU CAN AFFORD TO LOSE.
