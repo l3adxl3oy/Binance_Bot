@@ -283,7 +283,7 @@ class AggressiveRecoveryBot:
             # Restore balance
             if "current_balance" in state:
                 self.trade_history.current_balance = state["current_balance"]
-                self.trade_history.daily_start_balance = state.get("daily_start_balance", Config.STARTING_BALANCE)
+                self.trade_history.daily_start_balance = state.get("daily_start_balance", self.trade_history.starting_balance)
             
             # Restore recovery state
             self.martingale_level = state.get("martingale_level", {})
@@ -697,7 +697,7 @@ class AggressiveRecoveryBot:
             current_price = data["current_price"]
             
             # Update trailing stop (more aggressive)
-            if Config.TRAILING_STOP_ENABLED:
+            if Config.AGGRESSIVE_TRAILING_ENABLED:
                 self.trailing_stop_manager.update_trailing_stop(position, current_price)
             
             exit_reason = None
