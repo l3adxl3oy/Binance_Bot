@@ -1,77 +1,78 @@
 @echo off
+chcp 65001 > nul 2>&1
 setlocal enabledelayedexpansion
-chcp 65001 > nul
-title Binance Bot - ตรวจสอบและอัพเดทอัตโนมัติ
+title Binance Bot - Check Update
 color 0B
+cls
 
 echo.
 echo ========================================
-echo   🔍 ตรวจสอบและอัพเดท Binance Bot
+echo    Check Update - Binance Bot
 echo ========================================
 echo.
 
-REM ตรวจสอบว่ามี Python หรือไม่
+REM Check Python installation
 where python >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo ❌ ไม่พบ Python ในระบบ
+if errorlevel 1 (
+    echo [ERROR] Python not found
     echo.
     if exist "INSTALL.bat" (
-        echo 🔧 กำลังเรียกใช้ INSTALL.bat เพื่อติดตั้งระบบ...
+        echo Running INSTALL.bat to setup system...
         echo.
         call INSTALL.bat
         exit /b 0
     ) else (
-        echo กรุณาติดตั้ง Python 3.8+ จาก https://www.python.org/downloads/
-        echo หรือรัน INSTALL.bat เพื่อติดตั้งระบบ
+        echo Please install Python 3.8+ from https://www.python.org/downloads/
+        echo Or run INSTALL.bat to setup system
         echo.
         pause
         exit /b 1
     )
 )
 
-REM ตรวจสอบเวอร์ชัน Python
-echo 🐍 ตรวจสอบเวอร์ชัน Python...
+REM Check Python version
+echo Checking Python version...
 python --version
 echo.
 
-REM ตรวจสอบว่ามี virtual environment หรือไม่
+REM Check for virtual environment
 if exist ".venv\Scripts\activate.bat" (
-    echo 🔧 เปิดใช้งาน Virtual Environment...
+    echo Activating Virtual Environment...
     call .venv\Scripts\activate.bat
-    echo ✅ Virtual Environment เปิดใช้งานแล้ว
+    echo Virtual Environment activated
 ) else (
-    echo ⚠️ ไม่พบ Virtual Environment
-    echo กำลังใช้ Python ของระบบ...
+    echo Virtual Environment not found
+    echo Using system Python...
 )
 echo.
 
-REM ตรวจสอบและติดตั้ง dependencies ที่จำเป็น
-echo 📦 ตรวจสอบ dependencies...
+REM Check and install required dependencies
+echo Checking dependencies...
 python -c "import requests" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo ⚠️ กำลังติดตั้ง requests...
+if errorlevel 1 (
+    echo Installing requests...
     python -m pip install requests --quiet
 )
 echo.
 
-REM แสดงเวอร์ชันปัจจุบัน
+REM Display current version
 echo ========================================
-echo   📋 เวอร์ชันปัจจุบัน
+echo    Current Version
 echo ========================================
 echo.
 python -c "import version; print(f'Version: {version.__version__}'); print(f'Release Date: {version.RELEASE_DATE}'); print(f'Bot Name: {version.BOT_NAME}'); print(f'GitHub: {version.GITHUB_REPO_URL}')" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo ❌ ไม่สามารถอ่านข้อมูลเวอร์ชันได้
-    echo กรุณาตรวจสอบไฟล์ version.py
+if errorlevel 1 (
+    echo [ERROR] Cannot read version information
+    echo Please check version.py file
     echo.
     pause
     exit /b 1
 )
 echo.
 
-REM ตรวจสอบอัพเดทอัตโนมัติ
+REM Check for updates from GitHub
 echo ========================================
-echo   🔍 ตรวจสอบอัพเดทจาก GitHub
+echo    Checking for Updates from GitHub
 echo ========================================
 echo.
 python -c "from utils.updater import BotUpdater; updater = BotUpdater(); update_info = updater.check_for_updates(); exit(0 if update_info else 1)"
@@ -80,18 +81,17 @@ set HAS_UPDATE=%ERRORLEVEL%
 if %HAS_UPDATE% EQU 0 (
     echo.
     echo ========================================
-    echo   🆕 มีเวอร์ชันใหม่!
+    echo    New Version Available!
     echo ========================================
     echo.
-    set /p choice="❓ ต้องการอัพเดทเลยไหม? (y/n): "
+    set /p choice="Do you want to update now? (y/n): "
     
     if /i "!choice!"=="y" goto AUTO_UPDATE
     if /i "!choice!"=="yes" goto AUTO_UPDATE
-    if /i "!choice!"=="ใช่" goto AUTO_UPDATE
     
     echo.
-    echo ⏭️ ข้ามการอัพเดท
-    echo 💡 สามารถรันไฟล์นี้อีกครั้งเพื่ออัพเดทได้ทุกเมื่อ
+    echo Skipping update
+    echo You can run this file again to update anytime
     echo.
     goto EXIT
 ) else (
@@ -102,21 +102,21 @@ if %HAS_UPDATE% EQU 0 (
 :AUTO_UPDATE
 echo.
 echo ========================================
-echo   🔄 กำลังดาวน์โหลดและอัพเดท
+echo    Downloading and Updating
 echo ========================================
 echo.
-echo ⚠️ ระบบจะสำรองข้อมูลก่อนอัพเดท
+echo System will backup data before update
 echo.
 python -m utils.updater --update
 echo.
-if %ERRORLEVEL% EQU 0 (
+if errorlevel 1 (
     echo.
-    echo ✅ อัพเดทสำเร็จ!
-    echo 🔄 กรุณาปิดและเปิดโปรแกรมใหม่
+    echo [WARNING] Update failed
     echo.
 ) else (
     echo.
-    echo ⚠️ การอัพเดทล้มเหลว
+    echo [SUCCESS] Update completed!
+    echo Please restart the program
     echo.
 )
 pause

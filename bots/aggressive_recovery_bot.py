@@ -123,6 +123,26 @@ class AggressiveRecoveryBot:
         logger.info(f"  🛡️  Drawdown Protection: {Config.AGGRESSIVE_MAX_INTRADAY_DRAWDOWN}% from peak")
         logger.info("="*80)
         
+        # Show which intelligent features are enabled
+        logger.info("🤖 ระบบอัจฉริยะที่เปิดใช้งาน".center(80))
+        logger.info("-"*80)
+        feature_status = []
+        if Config.ENABLE_EVENT_MANAGER:
+            feature_status.append("✅ Event Manager (ปฏิทินเศรษฐกิจ + ความเชื่อมั่น)")
+        if Config.ENABLE_ADVANCED_RISK:
+            feature_status.append("✅ Risk Manager (Kelly + Correlation + Drawdown)")
+        if Config.ENABLE_ADAPTIVE_STRATEGY:
+            feature_status.append("✅ Adaptive Strategy (ตรวจจับแนวโน้ม + เรียนรู้)")
+        if Config.ENABLE_ENHANCED_ALERTS:
+            feature_status.append("✅ Enhanced Alerts (การแจ้งเตือนอัจฉริยะ)")
+        
+        if feature_status:
+            for status in feature_status:
+                logger.info(f"  {status}")
+        else:
+            logger.info("  ⚠️  ไม่มีระบบอัจฉริยะเปิดใช้งาน (โหมดพื้นฐาน)")
+        logger.info("="*80)
+        
         # Core managers
         self.symbol_manager = SymbolManager(
             symbol_pool=Config.SYMBOL_POOL,
@@ -147,29 +167,34 @@ class AggressiveRecoveryBot:
         if Config.ENABLE_EVENT_MANAGER:
             try:
                 self.event_manager = EventManager()
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"⚠️ Event Manager ล้มเหลว: {e}")
         
         self.risk_manager = None
         if Config.ENABLE_ADVANCED_RISK:
             try:
                 self.risk_manager = RiskManager(initial_capital=actual_balance)
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"⚠️ Risk Manager ล้มเหลว: {e}")
         
         self.alert_manager = None
         if Config.ENABLE_ENHANCED_ALERTS:
             try:
                 self.alert_manager = AlertManager()
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"⚠️ Alert Manager ล้มเหลว: {e}")
         
         self.adaptive_strategy = None
         if Config.ENABLE_ADAPTIVE_STRATEGY:
             try:
                 self.adaptive_strategy = AdaptiveStrategyEngine()
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"⚠️ Adaptive Strategy ล้มเหลว: {e}")
+        
+        # Log successful initialization
+        systems_count = sum([self.event_manager is not None, self.risk_manager is not None, 
+                            self.alert_manager is not None, self.adaptive_strategy is not None])
+        logger.info(f"✅ ระบบอัจฉริยะพร้อม: {systems_count}/4 ระบบ")
         
         # Recovery tracking
         self.recovery_positions: Dict[str, List[Position]] = {}  # Track multiple positions per symbol
@@ -506,6 +531,29 @@ class AggressiveRecoveryBot:
         if self.trading_paused:
             return
         
+        # ✅ Check Event Manager before trading (เช็คข่าวก่อนเทรด)
+        if self.event_manager and Config.ENABLE_EVENT_MANAGER:
+            decision = self.event_manager.get_trading_decision()
+            
+            # EMERGENCY: Stop all trading
+            if decision["status"] == "EMERGENCY":
+                if self.cycle_count % 10 == 0:  # Show warning every 10 cycles
+                    logger.warning(f"🔴 EMERGENCY: {decision['reason']}")
+                return
+            
+            # PAUSE: Only allow closing positions
+            if decision["status"] == "PAUSE":
+                if self.cycle_count % 20 == 0:
+                    logger.warning(f"🟠 PAUSE: {decision['reason']}")
+                return
+            
+            # CAUTION: Reduce signal strength requirement
+            if decision["status"] == "CAUTION":
+                signals["buy_strength"] *= 0.7
+                signals["sell_strength"] *= 0.7
+                if self.cycle_count % 30 == 0:
+                    logger.warning(f"🟡 CAUTION: {decision['reason']}")
+        
         # Use aggressive thresholds
         buy_strength = signals.get("buy_strength", 0)
         sell_strength = signals.get("sell_strength", 0)
@@ -599,6 +647,18 @@ class AggressiveRecoveryBot:
             logger.info(f"🎯 TP: ${take_profit:.2f} (+{take_profit_percent:.2f}%) | SL: ${stop_loss:.2f} (-{stop_loss_percent}%)")
             logger.info(f"📏 Size: {quantity:.6f} | Value: ${current_price * quantity:.2f}")
             logger.info(f"💡 Strength: {signal_strength:.1f} | Signals: {', '.join(signals['signal_details'][:3])}")
+            
+            # Intelligent system context
+            context_parts = []
+            if self.adaptive_strategy:
+                regime = self.adaptive_strategy.current_regime.value[:3].upper()
+                context_parts.append(f"Regime:{regime}")
+            if self.event_manager:
+                decision = self.event_manager.get_trading_decision()
+                context_parts.append(f"Evt:{decision['status'][:4]}")
+            if context_parts:
+                context_str = " | ".join(context_parts)
+                logger.info(f"🤖 Context: {context_str}")
             
             if is_recovery:
                 level = self.martingale_level.get(symbol, 0)
@@ -867,18 +927,76 @@ class AggressiveRecoveryBot:
         
         perf = "🚀" if daily_pnl > 3 else ("📈" if daily_pnl > 0 else "🔴")
         
-        # แสดงข้อมูลโดยละเอียด
-        logger.info(
-            f"\n{'='*80}\n"
-            f"Cycle #{self.cycle_count:04d} │ "
-            f"{perf} ${balance:.2f} ({daily_pnl:+.2f}%) │ "
-            f"Trades: {total_trades} │ "
-            f"WR: {win_rate:.1f}%\n"
-            f"Positions: {pos_count}/{Config.MAX_TOTAL_POSITIONS} │ "
-            f"Streak: {self.consecutive_wins}W/{self.consecutive_losses}L │ "
-            f"Target: {Config.AGGRESSIVE_DAILY_TARGET}%\n"
-            f"{'='*80}"
-        )
+        # Event status icon
+        evt_status = "✅"
+        if self.event_manager:
+            decision = self.event_manager.get_trading_decision()
+            evt_status = {
+                "CLEAR": "✅",
+                "CAUTION": "🟡",
+                "PAUSE": "🟠",
+                "EMERGENCY": "🔴"
+            }.get(decision["status"], "❓")
+        
+        # Every 10 cycles: Show detailed status
+        if self.cycle_count % 10 == 0:
+            logger.info("="*80)
+            logger.info(f"Cycle #{self.cycle_count:04d} │ {perf} ${balance:.2f} ({daily_pnl:+.2f}%)")
+            logger.info("-"*80)
+            logger.info(f"Trades: {total_trades} │ WR: {win_rate:.1f}% │ "
+                       f"Positions: {pos_count}/{Config.MAX_TOTAL_POSITIONS} │ "
+                       f"Streak: {self.consecutive_wins}W/{self.consecutive_losses}L")
+            
+            # Intelligent Systems Status
+            if self.event_manager or self.risk_manager or self.adaptive_strategy:
+                logger.info("-"*80)
+                logger.info("🤖 ระบบอัจฉริยะ")
+                
+                # Event Manager
+                if self.event_manager:
+                    decision = self.event_manager.get_trading_decision()
+                    status_icon = {
+                        "CLEAR": "✅",
+                        "CAUTION": "🟡",
+                        "PAUSE": "🟠",
+                        "EMERGENCY": "🔴"
+                    }.get(decision["status"], "❓")
+                    
+                    logger.info(f"📅 Event Manager: {status_icon} {decision['status']}")
+                    logger.info(f"   → {decision['reason'][:60]}")
+                    
+                    # Sentiment
+                    sentiment = self.event_manager.get_sentiment_signal()
+                    logger.info(f"💭 ความเชื่อมั่น: {sentiment['message'][:60]}")
+                
+                # Risk Manager
+                if self.risk_manager:
+                    metrics = self.risk_manager.get_portfolio_metrics()
+                    logger.info(f"⚡ ความเสี่ยง: Exposure {metrics.total_exposure:.1%} | "
+                               f"Correlation {metrics.correlation_score:.2f} | "
+                               f"Regime: {metrics.volatility_regime.upper()}")
+                    
+                    if metrics.current_drawdown > 0.05:
+                        logger.info(f"   ⚠️ Drawdown: {metrics.current_drawdown:.1%}")
+                
+                # Adaptive Strategy
+                if self.adaptive_strategy:
+                    regime = self.adaptive_strategy.current_regime.value.upper()
+                    mode = self.adaptive_strategy.current_params.mode.value.upper()
+                    logger.info(f"🎯 กลยุทธ์: ตลาด {regime} | โหมด: {mode}")
+            
+            logger.info("="*80)
+        
+        # Every cycle: Compact one-liner
+        else:
+            logger.info(
+                f"Cycle #{self.cycle_count:04d} │ "
+                f"{perf}${balance:.2f} ({daily_pnl:+.1f}%) │ "
+                f"Pos: {pos_count}/{Config.MAX_TOTAL_POSITIONS} │ "
+                f"WR: {win_rate:.0f}% │ "
+                f"Event: {evt_status} │ "
+                f"Streak: {self.consecutive_wins}W/{self.consecutive_losses}L"
+            )
     
     def run(self):
         """Main bot loop with aggressive timing"""

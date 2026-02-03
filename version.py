@@ -2,7 +2,7 @@
 Version information for BinanceBot
 """
 
-__version__ = "3.2.2"
+__version__ = "3.3.0"
 __version_info__ = tuple(map(int, __version__.split(".")))
 
 # GitHub Repository Configuration
