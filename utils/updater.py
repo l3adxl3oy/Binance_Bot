@@ -83,11 +83,32 @@ class BotUpdater:
             )
             
             if response.status_code == 404:
-                print("⚠️ Repository not found or no releases published yet")
-                return None
-            
-            response.raise_for_status()
-            release_data = response.json()
+                # ถ้าไม่มี latest release ลองดึงทุก releases
+                all_releases_url = self.github_api_url.replace('/releases/latest', '/releases')
+                try:
+                    all_response = requests.get(all_releases_url, timeout=timeout)
+                    if all_response.status_code == 200:
+                        releases = all_response.json()
+                        if releases and len(releases) > 0:
+                            # ใช้ release แรก (ล่าสุด)
+                            release_data = releases[0]
+                            print(f"✅ พบ Release: {release_data.get('tag_name', 'Unknown')}")
+                        else:
+                            print("⚠️ ยังไม่มี Release บน GitHub Repository")
+                            print(f"💡 วิธีแก้: ไปที่ {self.github_repo_url}/releases/new")
+                            print("   1. สร้าง Tag: v3.2.1")
+                            print("   2. ตั้งชื่อ Release และใส่รายละเอียด")
+                            print("   3. คลิก 'Publish release'")
+                            return None
+                    else:
+                        print("⚠️ ไม่สามารถเข้าถึง GitHub Repository")
+                        return None
+                except Exception as e:
+                    print(f"⚠️ เกิดข้อผิดพลาด: {e}")
+                    return None
+            else:
+                response.raise_for_status()
+                release_data = response.json()
             
             latest_version = release_data.get('tag_name', '').lstrip('v')
             release_name = release_data.get('name', 'Unknown')
