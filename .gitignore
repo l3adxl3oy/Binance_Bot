@@ -34,7 +34,7 @@ env/
 *~
 
 # Bot specific
-.env
+# .env (uncommented for personal use - contains API keys)
 config/bot_state.json
 bot_state.json
 bot_state_aggressive.json

@@ -101,9 +101,14 @@ class DailyScalpingBot:
             base_url=Config.BASE_URL
         )
         
-        # Get actual balance from Binance (if not DEMO_MODE)
-        actual_balance = Config.STARTING_BALANCE
-        if not Config.DEMO_MODE:
+        # 💰 ดึงยอดเงินจาก Binance (ไม่ใช้ .env อีกต่อไป)
+        actual_balance = 0.0
+        if Config.DEMO_MODE:
+            # DEMO MODE: ใช้ยอดจำลอง
+            actual_balance = 100.0
+            logger.info(f"💼 DEMO MODE: ใช้ยอดเงินจำลอง ${actual_balance:.2f}")
+        else:
+            # LIVE MODE: ดึงจาก Binance
             try:
                 account = self.client.account()
                 for asset in account['balances']:
@@ -111,9 +116,12 @@ class DailyScalpingBot:
                         actual_balance = float(asset['free'])
                         logger.info(f"💰 ดึงยอดเงินจาก Binance: ${actual_balance:,.2f} USDT")
                         break
+                if actual_balance == 0:
+                    logger.error("❌ ไม่พบยอด USDT ใน account!")
+                    raise ValueError("No USDT balance found")
             except Exception as e:
-                logger.warning(f"⚠️ ไม่สามารถดึงยอดเงินจาก API: {e}")
-                logger.warning(f"⚠️ ใช้ยอดเงินจาก config แทน: ${actual_balance:.2f}")
+                logger.error(f"❌ ไม่สามารถดึงยอดเงินจาก Binance: {e}")
+                raise
         
         logger.info(f"💰 ทุนเริ่มต้น: ${actual_balance:,.2f}")
         
@@ -132,8 +140,8 @@ class DailyScalpingBot:
         self.trade_history = TradeHistory(starting_balance=actual_balance)
         
         self.trailing_stop_manager = TrailingStopManager(
-            trail_percent=Config.TRAILING_STOP_PERCENT,
-            activation_profit=Config.TRAILING_ACTIVATION_PROFIT
+            trail_percent=Config.DAILY_TRAILING_PERCENT,
+            activation_profit=Config.DAILY_TRAILING_ACTIVATION
         )
         
         # ==================== INTELLIGENT SYSTEMS ====================
@@ -252,7 +260,7 @@ class DailyScalpingBot:
             # Restore balance
             if "current_balance" in state:
                 self.trade_history.current_balance = state["current_balance"]
-                self.trade_history.daily_start_balance = state.get("daily_start_balance", Config.STARTING_BALANCE)
+                self.trade_history.daily_start_balance = state.get("daily_start_balance", self.trade_history.daily_start_balance)
             
             logger.info(f"📂 State loaded: Balance=${self.trade_history.current_balance:.2f}, Recovery={self.recovery_mode}")
         
@@ -1206,7 +1214,7 @@ class DailyScalpingBot:
         
         self.send_telegram(
             f"🚀 <b>Intelligent Scalping Bot v3.0 Started</b>\n\n"
-            f"💰 Capital: ${Config.STARTING_BALANCE}\n"
+            f"💰 Capital: ${self.trade_history.daily_start_balance:.2f}\n"
             f"📊 Symbols: {len(Config.SYMBOL_POOL)} pool, {Config.MAX_ACTIVE_SYMBOLS} active\n"
             f"🎯 Target: +{Config.DAILY_PROFIT_TARGET}% to +{Config.DAILY_MAX_TARGET}%\n"
             f"💼 Mode: {'🧪 DEMO' if Config.DEMO_MODE else '⚠️ LIVE'}\n\n"

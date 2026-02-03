@@ -84,9 +84,14 @@ class AggressiveRecoveryBot:
             base_url=Config.BASE_URL
         )
         
-        # Get actual balance from Binance (if not DEMO_MODE)
-        actual_balance = Config.STARTING_BALANCE
-        if not Config.DEMO_MODE:
+        # 💰 ดึงยอดเงินจาก Binance (ไม่ใช้ .env อีกต่อไป)
+        actual_balance = 0.0
+        if Config.DEMO_MODE:
+            # DEMO MODE: ใช้ยอดจำลอง
+            actual_balance = 100.0
+            logger.info(f"💼 DEMO MODE: ใช้ยอดเงินจำลอง ${actual_balance:.2f}")
+        else:
+            # LIVE MODE: ดึงจาก Binance
             try:
                 account = self.client.account()
                 for asset in account['balances']:
@@ -94,9 +99,12 @@ class AggressiveRecoveryBot:
                         actual_balance = float(asset['free'])
                         logger.info(f"💰 ดึงยอดเงินจาก Binance: ${actual_balance:,.2f} USDT")
                         break
+                if actual_balance == 0:
+                    logger.error("❌ ไม่พบยอด USDT ใน account!")
+                    raise ValueError("No USDT balance found")
             except Exception as e:
-                logger.warning(f"⚠️ ไม่สามารถดึงยอดเงินจาก API: {e}")
-                logger.warning(f"⚠️ ใช้ยอดเงินจาก config แทน: ${actual_balance:.2f}")
+                logger.error(f"❌ ไม่สามารถดึงยอดเงินจาก Binance: {e}")
+                raise
         
         logger.info(f"💼 โหมด: {'DEMO (ทดสอบปลอดภัย)' if Config.DEMO_MODE else 'LIVE ⚠️ เงินจริง!'}")
         logger.info(f"💰 ทุนเริ่มต้น: ${actual_balance:,.2f}")
@@ -130,8 +138,8 @@ class AggressiveRecoveryBot:
         self.trade_history = TradeHistory(starting_balance=actual_balance)
         
         self.trailing_stop_manager = TrailingStopManager(
-            trail_percent=0.3,  # ไล่เร็วกว่า
-            activation_profit=0.5  # เปิดเร็วกว่า
+            trail_percent=Config.AGGRESSIVE_TRAILING_PERCENT,
+            activation_profit=Config.AGGRESSIVE_TRAILING_ACTIVATION
         )
         
         # Intelligent systems (optional)
@@ -542,13 +550,13 @@ class AggressiveRecoveryBot:
         
         # Aggressive TP/SL
         if signal_strength >= 5.0:
-            take_profit_percent = Config.AGGRESSIVE_STRONG_TP_PERCENT
+            take_profit_percent = Config.AGGRESSIVE_STRONG_TP
         elif signal_strength >= 3.5:
-            take_profit_percent = Config.AGGRESSIVE_MEDIUM_TP_PERCENT
+            take_profit_percent = Config.AGGRESSIVE_MEDIUM_TP
         else:
-            take_profit_percent = Config.AGGRESSIVE_QUICK_TP_PERCENT
+            take_profit_percent = Config.AGGRESSIVE_QUICK_TP
         
-        stop_loss_percent = Config.AGGRESSIVE_TIGHT_SL_PERCENT
+        stop_loss_percent = Config.AGGRESSIVE_TIGHT_SL
         
         # Calculate prices
         if side == "BUY":

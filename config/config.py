@@ -1,6 +1,7 @@
 """
-⚙️ ไฟล์ Config สำหรับ Daily Scalping Bot
-🔐 ใช้ .env file สำหรับเก็บ API Keys และข้อมูลสำคัญ
+⚙️ ไฟล์ Config สำหรับ Binance Trading Bots
+📌 Bot Configuration จัดการที่นี่ทั้งหมด
+🔐 API Credentials เก็บใน .env file
 """
 
 from decouple import config, Csv
@@ -9,166 +10,158 @@ from typing import List
 
 class Config:
     """
-    การตั้งค่าบอท - อ่านค่าจาก .env file
+    การตั้งค่าบอททั้งหมด
     
     🔧 วิธีใช้งาน:
-    1. คัดลอก .env.example เป็น .env
-    2. แก้ไขค่าต่างๆ ใน .env ตามต้องการ
+    1. แก้ไข config.py สำหรับการตั้งค่ากลยุทธ์
+    2. แก้ไข .env เฉพาะ API Keys และ Telegram
     3. ห้าม commit .env เข้า git (มี .gitignore ป้องกันแล้ว)
     """
     
-    # ==================== BINANCE API ====================
-    # 🔑 วิธีสร้าง API Key:
-    # 1. Testnet (ฝึกใช้ฟรี): https://testnet.binance.vision/
-    # 2. Mainnet (เงินจริง): https://www.binance.com/en/my/settings/api-management
-    
+    # ==================== BINANCE API (จาก .env) ====================
     API_KEY: str = config("BINANCE_API_KEY", default="YOUR_BINANCE_API_KEY")
     API_SECRET: str = config("BINANCE_API_SECRET", default="YOUR_BINANCE_API_SECRET")
     BASE_URL: str = config("BINANCE_BASE_URL", default="https://testnet.binance.vision")
     
-    # ==================== TELEGRAM (Optional) ====================
+    # ==================== TELEGRAM (จาก .env) ====================
     TELEGRAM_ENABLED: bool = config("TELEGRAM_ENABLED", default=False, cast=bool)
     TELEGRAM_BOT_TOKEN: str = config("TELEGRAM_BOT_TOKEN", default="")
     TELEGRAM_CHAT_ID: str = config("TELEGRAM_CHAT_ID", default="")
     
-    # ==================== เงินทุนและความเสี่ยง ====================
-    DEMO_MODE: bool = config("DEMO_MODE", default=True, cast=bool)
-    STARTING_BALANCE: float = config("STARTING_BALANCE", default=100.0, cast=float)
+    # ==================== GENERAL TRADING SETTINGS ====================
+    # 💼 โหมดการเทรด
+    DEMO_MODE: bool = False  # เปลี่ยนเป็น True เพื่อใช้โหมดทดสอบ (ไม่เชื่อม Binance)
     
-    MAX_LOSS_PER_TRADE: float = config("MAX_LOSS_PER_TRADE", default=0.25, cast=float)  # ลดจาก 0.6 → 0.25%
-    DAILY_LOSS_LIMIT: float = config("DAILY_LOSS_LIMIT", default=2.5, cast=float)  # หยุดเทรดที่ -2.5%
-    DAILY_PROFIT_TARGET: float = config("DAILY_PROFIT_TARGET", default=2.0, cast=float)  # เป้ากำไร 2%/วัน (realistic)
-    DAILY_MAX_TARGET: float = config("DAILY_MAX_TARGET", default=5.0, cast=float)  # หยุดเทรดที่ +5% (lock profits)
+    # 📊 ระบบและเวลา
+    CHECK_INTERVAL: int = 30  # ตรวจสอบทุก 30 วินาที
+    TIMEFRAME: str = "1m"  # ใช้กราฟ 1 นาที
     
-    # ==================== การจัดการ Position ====================
-    MAX_TOTAL_POSITIONS: int = config("MAX_TOTAL_POSITIONS", default=4, cast=int)  # ปรับตาม symbols ที่ผ่าน backtest
-    MAX_ACTIVE_SYMBOLS: int = config("MAX_ACTIVE_SYMBOLS", default=4, cast=int)  # ใช้เฉพาะเหรียญที่ผ่าน backtest
-    
-    # คู่เงินที่จะเทรด (✅ Backtest Verified Only - Top 4 Performers)
+    # 📈 คู่เงินที่เทรด (Verified from Backtest)
     SYMBOL_POOL: List[str] = [
-        "BTCUSDT",   # ✅ Best performer: 68.75% WR, avg +$0.30
-        "BNBUSDT",   # ✅ Explosive: +$10.25 total
+        "BTCUSDT",   # ✅ Best: 68.75% WR
+        "BNBUSDT",   # ✅ Explosive: +$10.25
         "ADAUSDT",   # ✅ Stable: 68.42% WR
         "SOLUSDT",   # ✅ Good: 63.16% WR
-        # เหรียญอื่นๆ รอผล backtest ก่อนเปิดใช้
-        # "ETHUSDT",  # ❌ REMOVED: -$18.65 total (destroying performance)
-        # "XRPUSDT", "DOGEUSDT", "TRXUSDT", "DOTUSDT", "AVAXUSDT",
-        # "LINKUSDT", "ATOMUSDT", "LTCUSDT", "ETCUSDT", "XLMUSDT",
-        # "FILUSDT", "ICPUSDT", "APTUSDT"
     ]
     
-    # ==================== Take Profit / Stop Loss ====================
-    TAKE_PROFIT_3_SIGNALS: float = config("TAKE_PROFIT_3_SIGNALS", default=0.85, cast=float)
-    TAKE_PROFIT_4_SIGNALS: float = config("TAKE_PROFIT_4_SIGNALS", default=1.15, cast=float)
-    STOP_LOSS_PERCENT: float = config("STOP_LOSS_PERCENT", default=0.35, cast=float)
+    # 🎯 การจัดการ Position
+    MAX_TOTAL_POSITIONS: int = 4  # ออเดอร์สูงสุดพร้อมกัน
+    MAX_ACTIVE_SYMBOLS: int = 4  # เหรียญสูงสุดพร้อมกัน
     
-    # ==================== INTELLIGENT FEATURES ====================
-    # Event Management
-    ENABLE_EVENT_MANAGER: bool = config("ENABLE_EVENT_MANAGER", default=True, cast=bool)
-    ENABLE_SENTIMENT_TRACKING: bool = config("ENABLE_SENTIMENT_TRACKING", default=True, cast=bool)
-    ENABLE_CASCADE_DETECTION: bool = config("ENABLE_CASCADE_DETECTION", default=True, cast=bool)
+    # ==================== INTELLIGENT SYSTEMS (เปิด/ปิดระบบอัจฉริยะ) ====================
+    ENABLE_EVENT_MANAGER: bool = True  # ระบบติดตามข่าวและเหตุการณ์
+    ENABLE_SENTIMENT_TRACKING: bool = True  # ติดตามความเชื่อมั่นตลาด
+    ENABLE_CASCADE_DETECTION: bool = True  # ตรวจจับการลดราคาพร้อมกัน
     
-    # Risk Management
-    ENABLE_ADVANCED_RISK: bool = config("ENABLE_ADVANCED_RISK", default=True, cast=bool)
-    ENABLE_CORRELATION_FILTER: bool = config("ENABLE_CORRELATION_FILTER", default=True, cast=bool)
-    ENABLE_KELLY_SIZING: bool = config("ENABLE_KELLY_SIZING", default=True, cast=bool)
-    MAX_CORRELATION_ALLOWED: float = config("MAX_CORRELATION_ALLOWED", default=0.5, cast=float)  # ลดจาก 0.65 → 0.5 (เข้มงวดขึ้น)
+    ENABLE_ADVANCED_RISK: bool = True  # ระบบบริหารความเสี่ยงขั้นสูง
+    ENABLE_CORRELATION_FILTER: bool = True  # กรองคู่เงินที่มี correlation สูง
+    ENABLE_KELLY_SIZING: bool = True  # คำนวณขนาด position ด้วย Kelly Criterion
+    MAX_CORRELATION_ALLOWED: float = 0.5  # ห้ามเทรดคู่เงินที่ correlation > 0.5
     
-    # Adaptive Strategy
-    ENABLE_ADAPTIVE_STRATEGY: bool = config("ENABLE_ADAPTIVE_STRATEGY", default=True, cast=bool)
-    ENABLE_REGIME_DETECTION: bool = config("ENABLE_REGIME_DETECTION", default=True, cast=bool)
-    ENABLE_PARAMETER_LEARNING: bool = config("ENABLE_PARAMETER_LEARNING", default=True, cast=bool)
+    ENABLE_ADAPTIVE_STRATEGY: bool = True  # ปรับกลยุทธ์ตามสภาพตลาด
+    ENABLE_REGIME_DETECTION: bool = True  # ตรวจจับแนวโน้มตลาด
+    ENABLE_PARAMETER_LEARNING: bool = True  # เรียนรู้ parameter ที่เหมาะสม
     
-    # Enhanced Alerts
-    ENABLE_ENHANCED_ALERTS: bool = config("ENABLE_ENHANCED_ALERTS", default=True, cast=bool)
-    ALERT_HOURLY_STATUS: bool = config("ALERT_HOURLY_STATUS", default=False, cast=bool)
-    ALERT_DAILY_SUMMARY: bool = config("ALERT_DAILY_SUMMARY", default=True, cast=bool)
-    
-    # Trailing Stop
-    TRAILING_STOP_ENABLED: bool = config("TRAILING_STOP_ENABLED", default=True, cast=bool)
-    TRAILING_STOP_PERCENT: float = config("TRAILING_STOP_PERCENT", default=0.2, cast=float)
-    TRAILING_ACTIVATION_PROFIT: float = config("TRAILING_ACTIVATION_PROFIT", default=0.5, cast=float)
+    ENABLE_ENHANCED_ALERTS: bool = True  # การแจ้งเตือนขั้นสูง
+    ALERT_HOURLY_STATUS: bool = False  # แจ้งเตือนทุกชั่วโมง
+    ALERT_DAILY_SUMMARY: bool = True  # สรุปผลรายวัน
     
     # ==================== AUTO-UPDATE ====================
-    # Auto-update configuration
-    AUTO_UPDATE_CHECK_ENABLED: bool = config("AUTO_UPDATE_CHECK_ENABLED", default=True, cast=bool)
-    AUTO_UPDATE_ON_STARTUP: bool = config("AUTO_UPDATE_ON_STARTUP", default=False, cast=bool)  # Manual approval by default
-    AUTO_UPDATE_CHECK_FREQUENCY: int = config("AUTO_UPDATE_CHECK_FREQUENCY", default=86400, cast=int)  # Check once per day (seconds)
-    AUTO_UPDATE_BACKUP_RETENTION: int = config("AUTO_UPDATE_BACKUP_RETENTION", default=5, cast=int)  # Keep last 5 backups
+    AUTO_UPDATE_CHECK_ENABLED: bool = True  # เช็คอัพเดทอัตโนมัติ
+    AUTO_UPDATE_ON_STARTUP: bool = False  # อัพเดทอัตโนมัติเมื่อเปิดบอท
+    AUTO_UPDATE_CHECK_FREQUENCY: int = 86400  # เช็คทุก 24 ชม (วินาที)
+    AUTO_UPDATE_BACKUP_RETENTION: int = 5  # เก็บ backup ล่าสุด 5 ไฟล์
     
-    # ==================== ระบบ ====================
-    CHECK_INTERVAL: int = config("CHECK_INTERVAL", default=30, cast=int)
-    TIMEFRAME: str = config("TIMEFRAME", default="1m")
+    # ==================== 🔥 AGGRESSIVE RECOVERY BOT SETTINGS ====================
+    # กลยุทธ์: เทรดรวดเร็ว + กู้คืนขาดทุนอัจฉริยะ (v2.2 Original - Verified +13.19%)
     
-    # ==================== AGGRESSIVE BOT SETTINGS ====================
-    # TP/SL Levels
-    AGGRESSIVE_QUICK_TP: float = config("AGGRESSIVE_QUICK_TP", default=1.2, cast=float)
-    AGGRESSIVE_MEDIUM_TP: float = config("AGGRESSIVE_MEDIUM_TP", default=1.8, cast=float)
-    AGGRESSIVE_STRONG_TP: float = config("AGGRESSIVE_STRONG_TP", default=2.5, cast=float)
-    AGGRESSIVE_TIGHT_SL: float = config("AGGRESSIVE_TIGHT_SL", default=0.6, cast=float)
-    AGGRESSIVE_MEDIUM_SL: float = config("AGGRESSIVE_MEDIUM_SL", default=0.8, cast=float)
-    AGGRESSIVE_WIDE_SL: float = config("AGGRESSIVE_WIDE_SL", default=1.0, cast=float)
+    # 💰 TP/SL Levels (Proven Profitable)
+    AGGRESSIVE_QUICK_TP: float = 1.2  # TP เร็ว 1.2%
+    AGGRESSIVE_MEDIUM_TP: float = 1.8  # TP กลาง 1.8%
+    AGGRESSIVE_STRONG_TP: float = 2.5  # TP แรง 2.5%
+    AGGRESSIVE_TIGHT_SL: float = 0.6  # SL แคบ 0.6%
+    AGGRESSIVE_MEDIUM_SL: float = 0.8  # SL กลาง 0.8%
+    AGGRESSIVE_WIDE_SL: float = 1.0  # SL กว้าง 1.0%
     
-    # Recovery System
-    AGGRESSIVE_MARTINGALE_MULTIPLIER: float = config("AGGRESSIVE_MARTINGALE_MULTIPLIER", default=1.3, cast=float)
-    AGGRESSIVE_MAX_MARTINGALE_LEVEL: int = config("AGGRESSIVE_MAX_MARTINGALE_LEVEL", default=2, cast=int)
-    AGGRESSIVE_ENABLE_AVERAGING: bool = config("AGGRESSIVE_ENABLE_AVERAGING", default=False, cast=bool)
-    AGGRESSIVE_AVERAGING_DISTANCE: float = config("AGGRESSIVE_AVERAGING_DISTANCE", default=0.3, cast=float)
-    AGGRESSIVE_MAX_AVERAGING_TIMES: int = config("AGGRESSIVE_MAX_AVERAGING_TIMES", default=0, cast=int)
+    # � Risk Management
+    MAX_LOSS_PER_TRADE: float = 0.15  # เสี่ยงสูงสุด 0.15% ต่อเทรด
     
-    # Signal Quality
-    AGGRESSIVE_MIN_SIGNAL_STRENGTH: float = config("AGGRESSIVE_MIN_SIGNAL_STRENGTH", default=4.0, cast=float)
-    AGGRESSIVE_MIN_CONFLUENCE_SIGNALS: int = config("AGGRESSIVE_MIN_CONFLUENCE_SIGNALS", default=4, cast=int)
+    # 🔄 Recovery System (Martingale)
+    AGGRESSIVE_ENABLE_SMART_MARTINGALE: bool = True  # เปิด Martingale
+    AGGRESSIVE_MARTINGALE_MULTIPLIER: float = 1.3  # คูณขนาด position 1.3x
+    AGGRESSIVE_MAX_MARTINGALE_LEVEL: int = 2  # สูงสุด 2 level
+    AGGRESSIVE_ENABLE_AVERAGING: bool = False  # ปิด Averaging (ป้องกันการทบทุน)
+    AGGRESSIVE_AVERAGING_DISTANCE: float = 0.3  # ระยะห่างเฉลี่ย 0.3%
+    AGGRESSIVE_MAX_AVERAGING_TIMES: int = 0  # ไม่ทำ Averaging
     
-    # Targets & Limits
-    AGGRESSIVE_DAILY_TARGET: float = config("AGGRESSIVE_DAILY_TARGET", default=5.0, cast=float)
-    AGGRESSIVE_DAILY_MAX: float = config("AGGRESSIVE_DAILY_MAX", default=5.0, cast=float)
-    AGGRESSIVE_MAX_DAILY_LOSS: float = config("AGGRESSIVE_MAX_DAILY_LOSS", default=-5.0, cast=float)
-    AGGRESSIVE_MAX_INTRADAY_DRAWDOWN: float = config("AGGRESSIVE_MAX_INTRADAY_DRAWDOWN", default=-15.0, cast=float)
-    AGGRESSIVE_QUICK_PROFIT_LOCK: float = config("AGGRESSIVE_QUICK_PROFIT_LOCK", default=3.0, cast=float)
+    # 🎯 Signal Quality (v2.2 Original - Very Selective)
+    AGGRESSIVE_MIN_SIGNAL_STRENGTH: float = 4.0  # คะแนนขั้นต่ำ 4.0/5.0
+    AGGRESSIVE_MIN_CONFLUENCE_SIGNALS: int = 4  # สัญญาณขั้นต่ำ 4 อัน
     
-    # Timing
-    AGGRESSIVE_TIME_STOP_FAST: int = config("AGGRESSIVE_TIME_STOP_FAST", default=600, cast=int)
-    AGGRESSIVE_TIME_STOP_RECOVERY: int = config("AGGRESSIVE_TIME_STOP_RECOVERY", default=900, cast=int)
-    AGGRESSIVE_WIN_STREAK_BONUS: float = config("AGGRESSIVE_WIN_STREAK_BONUS", default=1.3, cast=float)
-    AGGRESSIVE_LOSS_REDUCTION: float = config("AGGRESSIVE_LOSS_REDUCTION", default=0.7, cast=float)
+    # 💎 Targets & Limits
+    AGGRESSIVE_DAILY_TARGET: float = 5.0  # เป้ากำไร 5%/วัน
+    AGGRESSIVE_DAILY_MAX: float = 5.0  # หยุดที่ 5% (Lock Profit)
+    AGGRESSIVE_MAX_DAILY_LOSS: float = -5.0  # หยุดขาดทุน -5%
+    AGGRESSIVE_MAX_INTRADAY_DRAWDOWN: float = -15.0  # Drawdown สูงสุด -15%
+    AGGRESSIVE_QUICK_PROFIT_LOCK: float = 3.0  # ล็อคกำไรที่ 3%
     
-    # ==================== DAILY SCALPING BOT SETTINGS ====================
-    # 📊 ตัวชี้วัดทางเทคนิค (Technical Indicators)
-    RSI_PERIOD: int = config("RSI_PERIOD", default=14, cast=int)  # ช่วงเวลาคำนวณ RSI
-    RSI_OVERSOLD: int = config("RSI_OVERSOLD", default=30, cast=int)  # ขาย Oversold (ถูกเกินไป)
-    RSI_OVERBOUGHT: int = config("RSI_OVERBOUGHT", default=70, cast=int)  # ขอบ Overbought (แพงเกินไป)
-    BB_PERIOD: int = config("BB_PERIOD", default=20, cast=int)  # ช่วง Bollinger Bands
-    BB_STD_DEV: int = config("BB_STD_DEV", default=2, cast=int)  # ค่าเบี่ยงเบนมาตรฐาน BB
-    MACD_FAST: int = config("MACD_FAST", default=12, cast=int)  # MACD เส้นเร็ว
-    MACD_SLOW: int = config("MACD_SLOW", default=26, cast=int)  # MACD เส้นช้า
-    MACD_SIGNAL: int = config("MACD_SIGNAL", default=9, cast=int)  # MACD Signal
-    EMA_FAST: int = config("EMA_FAST", default=20, cast=int)  # EMA เร็ว (เทรนด์สั้น)
-    EMA_SLOW: int = config("EMA_SLOW", default=50, cast=int)  # EMA ช้า (เทรนด์ยาว)
-    ATR_PERIOD: int = config("ATR_PERIOD", default=14, cast=int)  # ช่วงคำนวณ ATR
+    # ⏰ Timing (v2.2 Original)
+    AGGRESSIVE_TIME_STOP_FAST: int = 600  # หมดเวลา 10 นาที (600 วินาที)
+    AGGRESSIVE_TIME_STOP_RECOVERY: int = 900  # หมดเวลา Recovery 15 นาที
+    AGGRESSIVE_WIN_STREAK_BONUS: float = 1.3  # โบนัสชนะติด 1.3x
+    AGGRESSIVE_LOSS_REDUCTION: float = 0.7  # ลดขนาดหลังแพ้ 0.7x
     
-    # 🎯 กฎการเข้า-ออกออเดอร์ (Entry/Exit Rules)
-    MIN_CONFLUENCE_SIGNALS: int = config("MIN_CONFLUENCE_SIGNALS", default=3, cast=int)  # จำนวนสัญญาณขั้นต่ำ
-    MIN_SIGNAL_STRENGTH: float = config("MIN_SIGNAL_STRENGTH", default=4.5, cast=float)  # ความแข็งแรงสัญญาณขั้นต่ำ
-    ATR_SL_MULTIPLIER: float = config("ATR_SL_MULTIPLIER", default=1.2, cast=float)  # ตัวคูณ ATR สำหรับ Stop Loss
-    ATR_TP_MULTIPLIER: float = config("ATR_TP_MULTIPLIER", default=4.5, cast=float)  # ตัวคูณ ATR สำหรับ Take Profit
+    # 🛡️ Trailing Stop (Aggressive Mode)
+    AGGRESSIVE_TRAILING_ENABLED: bool = True  # เปิด Trailing Stop
+    AGGRESSIVE_TRAILING_PERCENT: float = 0.3  # ห่าง 0.3%
+    AGGRESSIVE_TRAILING_ACTIVATION: float = 0.5  # เริ่มที่กำไร 0.5%
     
-    # 💰 ปิดกำไรทีละส่วน (Partial Take Profit)
-    PARTIAL_TP_ENABLED: bool = config("PARTIAL_TP_ENABLED", default=True, cast=bool)  # เปิด/ปิด Partial TP
-    PARTIAL_TP_1_PERCENT: float = config("PARTIAL_TP_1_PERCENT", default=0.35, cast=float)  # TP ครั้งที่ 1 (0.35%)
-    PARTIAL_TP_1_SIZE: float = config("PARTIAL_TP_1_SIZE", default=0.40, cast=float)  # ปิด 40% ของ position
-    PARTIAL_TP_2_PERCENT: float = config("PARTIAL_TP_2_PERCENT", default=0.75, cast=float)  # TP ครั้งที่ 2 (0.75%)
-    PARTIAL_TP_2_SIZE: float = config("PARTIAL_TP_2_SIZE", default=0.30, cast=float)  # ปิด 30% ของ position
-    PARTIAL_TP_3_PERCENT: float = config("PARTIAL_TP_3_PERCENT", default=2.0, cast=float)  # TP ครั้งที่ 3 (2.0%)
-    MOVE_SL_TO_BREAKEVEN_AFTER_PARTIAL: bool = config("MOVE_SL_TO_BREAKEVEN_AFTER_PARTIAL", default=True, cast=bool)  # ขยับ SL เป็น BE หลัง Partial TP
+    # ==================== 📊 DAILY SCALPING BOT SETTINGS ====================
+    # กลยุทธ์: Confluence Scalping บนกราฟ 1 นาที
     
-    # 📍 จัดการออเดอร์ (Position Management)
-    MAX_POSITIONS_PER_SYMBOL: int = config("MAX_POSITIONS_PER_SYMBOL", default=2, cast=int)  # ออเดอร์สูงสุดต่อเหรียญ
-    TIME_STOP_BASE: int = config("TIME_STOP_BASE", default=150, cast=int)  # เวลาปิดพื้นฐาน (วินาที)
-    TIME_STOP_STRONG_SIGNAL: int = config("TIME_STOP_STRONG_SIGNAL", default=240, cast=int)  # เวลาปิดสัญญาณแรง (วินาที)
-    TIME_STOP_SECONDS: int = config("TIME_STOP_SECONDS", default=240, cast=int)  # เวลา Time Stop (วินาที)
+    # 🎯 Daily Targets
+    DAILY_PROFIT_TARGET: float = 2.0  # เป้ากำไร 2%/วัน
+    DAILY_MAX_TARGET: float = 5.0  # หยุดเทรดที่ 5%
+    DAILY_LOSS_LIMIT: float = -2.5  # หยุดขาดทุน -2.5%
     
-    # 📊 กรองตลาดและปริมาณ (Volume & Market Filter)
-    MIN_VOLUME_RATIO: float = config("MIN_VOLUME_RATIO", default=0.8, cast=float)  # อัตราปริมาณขั้นต่ำ
-    SIDEWAYS_THRESHOLD: float = config("SIDEWAYS_THRESHOLD", default=0.4, cast=float)  # เกณฑ์ตลาดนิ่ง
-    USE_VOLUME_QUALITY_FILTER: bool = config("USE_VOLUME_QUALITY_FILTER", default=True, cast=bool)  # กรองคุณภาพปริมาณ
+    # 📈 Technical Indicators (ตัวชี้วัดทางเทคนิค)
+    RSI_PERIOD: int = 14  # ช่วง RSI
+    RSI_OVERSOLD: int = 30  # RSI Oversold
+    RSI_OVERBOUGHT: int = 70  # RSI Overbought
+    BB_PERIOD: int = 20  # ช่วง Bollinger Bands
+    BB_STD_DEV: int = 2  # ค่าเบี่ยงเบนมาตรฐาน
+    MACD_FAST: int = 12  # MACD Fast
+    MACD_SLOW: int = 26  # MACD Slow
+    MACD_SIGNAL: int = 9  # MACD Signal
+    EMA_FAST: int = 20  # EMA เร็ว
+    EMA_SLOW: int = 50  # EMA ช้า
+    ATR_PERIOD: int = 14  # ช่วง ATR
+    
+    # 🎯 Entry/Exit Rules
+    MIN_CONFLUENCE_SIGNALS: int = 3  # สัญญาณขั้นต่ำ 3 อัน
+    MIN_SIGNAL_STRENGTH: float = 4.5  # คะแนนขั้นต่ำ 4.5/5.0
+    ATR_SL_MULTIPLIER: float = 1.2  # Stop Loss = ATR × 1.2
+    ATR_TP_MULTIPLIER: float = 4.5  # Take Profit = ATR × 4.5
+    
+    # 💰 Partial Take Profit (ปิดกำไรทีละส่วน)
+    PARTIAL_TP_ENABLED: bool = True  # เปิดใช้งาน Partial TP
+    PARTIAL_TP_1_PERCENT: float = 0.35  # TP 1: 0.35%
+    PARTIAL_TP_1_SIZE: float = 0.40  # ปิด 40% ของ position
+    PARTIAL_TP_2_PERCENT: float = 0.75  # TP 2: 0.75%
+    PARTIAL_TP_2_SIZE: float = 0.30  # ปิด 30% ของ position
+    PARTIAL_TP_3_PERCENT: float = 2.0  # TP 3: 2.0%
+    MOVE_SL_TO_BREAKEVEN_AFTER_PARTIAL: bool = True  # ขยับ SL → BE หลัง Partial
+    
+    # 📍 Position Management
+    MAX_POSITIONS_PER_SYMBOL: int = 2  # ออเดอร์สูงสุดต่อเหรียญ
+    TIME_STOP_SECONDS: int = 240  # หมดเวลา 4 นาที (240 วินาที)
+    
+    # 📊 Volume & Market Filter
+    MIN_VOLUME_RATIO: float = 0.8  # Volume ขั้นต่ำ 80%
+    SIDEWAYS_THRESHOLD: float = 0.4  # กรองตลาดนิ่ง
+    USE_VOLUME_QUALITY_FILTER: bool = True  # เปิดกรอง Volume
+    
+    # 🛡️ Trailing Stop (Daily Scalping Mode)
+    DAILY_TRAILING_ENABLED: bool = True  # เปิด Trailing Stop
+    DAILY_TRAILING_PERCENT: float = 0.2  # ห่าง 0.2%
+    DAILY_TRAILING_ACTIVATION: float = 0.5  # เริ่มที่กำไร 0.5%

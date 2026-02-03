@@ -33,7 +33,7 @@ class StrategyConstants:
     
     # Volume
     VOLUME_PERIOD: int = 20
-    VOLUME_MULTIPLIER: float = 2.0  # เพิ่มจาก 1.5 → 2.0 (ต้องการ volume สูงกว่า)
+    VOLUME_MULTIPLIER: float = 1.5  # ลดจาก 2.0 → 1.5 (รับสัญญาณได้บ่อยขึ้น)
     
     # ATR
     ATR_PERIOD: int = 14
@@ -55,7 +55,7 @@ class StrategyConstants:
     
     # ==================== ENTRY/EXIT RULES ====================
     MIN_CONFLUENCE_SIGNALS: int = 3
-    MIN_SIGNAL_STRENGTH: float = 4.5  # เพิ่มจาก 4.0 → 4.5 สำหรับ entry quality ดีขึ้น
+    MIN_SIGNAL_STRENGTH: float = 3.5  # ลดจาก 4.5 → 3.5 (เพิ่มความถี่ออเดอร์)
     USE_DYNAMIC_RR: bool = True
     USE_ATR_BASED_STOPS: bool = True  # เปิดใช้ ATR-based SL/TP
     ATR_SL_MULTIPLIER: float = 1.2    # ลดจาก 1.5 → 1.2 (SL แคบลง 20% = ลด noise)
