@@ -63,55 +63,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# ===================== AGGRESSIVE STRATEGY CONSTANTS =====================
-class AggressiveStrategy:
-    """Constants for aggressive fast-profit strategy - OPTIMIZED v2.0
-    🎯 Focus: 5% daily target with immediate stop | Fast completion | High profitability
-    """
-    
-    # OPTIMIZED PROFIT TARGETS (เพิ่มขึ้น +50%)
-    QUICK_TP_PERCENT = 1.2  # TP 1.2% (เร็ว!) [เดิม 0.8%]
-    MEDIUM_TP_PERCENT = 1.8  # TP 1.8% (ปานกลาง) [เดิม 1.2%]
-    STRONG_TP_PERCENT = 2.5  # TP 2.5% (สัญญาณแรง) [เดิม 1.8%]
-    
-    # BALANCED STOP LOSS (ปรับเพิ่ม +20% เพื่อ RR ที่ดี)
-    TIGHT_SL_PERCENT = 0.6  # SL 0.6% [เดิม 0.5%]
-    MEDIUM_SL_PERCENT = 0.8  # SL 0.8%
-    WIDE_SL_PERCENT = 1.0  # SL 1.0%
-    
-    # SAFE RECOVERY SYSTEM (ลดความเสี่ยง)
-    ENABLE_SMART_MARTINGALE = True  # เปิด Martingale (ลดความเสี่ยง)
-    MARTINGALE_MULTIPLIER = 1.3  # เพิ่ม position 1.3x หลังขาดทุน [เดิม 1.5x]
-    MAX_MARTINGALE_LEVEL = 2  # กู้คืนสูงสุด 2 ครั้ง [เดิม 3 ครั้ง]
-    
-    ENABLE_AVERAGING = False  # ปิด Averaging (หลีกเลี่ยงการทบทุน) [เดิม True]
-    AVERAGING_DISTANCE = 0.3  # เฉลี่ยเมื่อราคาห่าง 0.3%
-    MAX_AVERAGING_TIMES = 0  # ปิดการ Averaging [เดิม 2]
-    
-    # QUALITY OVER QUANTITY (คุณภาพสัญญาณ - เข้มงวดสูง)
-    MIN_SIGNAL_STRENGTH = 4.0  # เกณฑ์สูงมาก - เลือกแต่สัญญาณดีที่สุด [เดิม 2.0 → 3.0 → 4.0]
-    MIN_CONFLUENCE_SIGNALS = 4  # ต้องการสัญญาณครบ 4/4 [เดิม 2/4 → 3/4 → 4/4]
-    CHECK_INTERVAL = 30  # เช็คทุก 30 วินาที (ลดสัญญาณรบกวน) [เดิม 15s]
-    
-    # ADAPTIVE SIZING (ปรับขนาดตามผล)
-    WIN_STREAK_BONUS = 1.3  # ชนะติดกัน 3 ครั้ง เพิ่ม size 30%
-    LOSS_REDUCTION = 0.7  # แพ้ติดกัน ลด size 30%
-    
-    # TIME LIMITS (เพิ่มเวลาให้ถึง TP)
-    TIME_STOP_FAST = 600  # 10 นาที [เดิม 3 นาที]
-    TIME_STOP_RECOVERY = 900  # 15 นาที [เดิม 5 นาที]
-    
-    # 🎯 STRICT 5% TARGET (เป้าหมายเข้มงวด)
-    QUICK_PROFIT_LOCK = 3.0  # แจ้งเตือนเมื่อถึง +3%
-    DAILY_TARGET = 5.0  # เป้าหมายรายวัน +5% (หยุดทันที)
-    DAILY_MAX = 5.0  # เหมือน TARGET (หยุดเมื่อถึง 5%) [เดิม 8%]
-    
-    # RISK LIMITS (เข้มงวดขึ้น)
-    MAX_INTRADAY_DRAWDOWN = -15.0  # หยุดถ้าลดจากจุดสูงสุด -15% [ใหม่]
-    MAX_RECOVERY_RISK = 2.5  # ยอมขาดทุนสูงสุด -2.5% ก่อนหยุด recovery [เดิม -3%]
-    MAX_DAILY_LOSS = -5.0  # หยุดเทรดถ้าขาดทุน -5%
-
-
 # ===================== MAIN BOT ====================
 class AggressiveRecoveryBot:
     """Aggressive Recovery Bot - Fast Profit + Smart Loss Recovery"""
@@ -121,22 +72,6 @@ class AggressiveRecoveryBot:
         logger.info(f"🔥 {BOT_NAME} v{__version__} - OPTIMIZED v2.1".center(80))
         logger.info("="*80)
         logger.info("🎯 กลยุทธ์: เลือกเฉพาะสัญญาณดีที่สุด → ทำกำไร 5% → หยุดทันที".center(80))
-        logger.info("="*80)
-        logger.info(f"💼 โหมด: {'DEMO (ทดสอบปลอดภัย)' if Config.DEMO_MODE else 'LIVE ⚠️ เงินจริง!'}")
-        logger.info(f"💰 ทุน: ${Config.STARTING_BALANCE:.2f}")
-        logger.info(f"📊 Symbols: {len(Config.SYMBOL_POOL)} pool, {Config.MAX_ACTIVE_SYMBOLS} active")
-        logger.info(f"⏱️  Timeframe: {Config.TIMEFRAME} (Fast Scalping)")
-        logger.info(f"🎯 เป้าหมาย STRICT: +{AggressiveStrategy.DAILY_TARGET}% แล้วหยุดทันที!")
-        logger.info("-"*80)
-        logger.info("⚡ กลยุทธ์ที่ปรับปรุง v2.1 (Ultra-Selective)".center(80))
-        logger.info("-"*80)
-        logger.info(f"  ✅ TP เพิ่มขึ้น: {AggressiveStrategy.QUICK_TP_PERCENT}%-{AggressiveStrategy.STRONG_TP_PERCENT}% (RR ดีขึ้น)")
-        logger.info(f"  🛡️  SL ปลอดภัย: {AggressiveStrategy.TIGHT_SL_PERCENT}%-{AggressiveStrategy.WIDE_SL_PERCENT}% (ป้องกันดี)")
-        logger.info(f"  🔄 Martingale ปลอดภัย: {AggressiveStrategy.MARTINGALE_MULTIPLIER}x Max {AggressiveStrategy.MAX_MARTINGALE_LEVEL} level")
-        logger.info(f"  🚫 Averaging: {'Disabled' if not AggressiveStrategy.ENABLE_AVERAGING else 'Enabled'} (ป้องกันการทบทุน)")
-        logger.info(f"  📊 Signal Quality: {AggressiveStrategy.MIN_SIGNAL_STRENGTH}/5, {AggressiveStrategy.MIN_CONFLUENCE_SIGNALS}/4 (เข้มงวดสูงสุด!)")
-        logger.info(f"  ⏰ Check: {AggressiveStrategy.CHECK_INTERVAL}s (ลดสัญญาณรบกวน)")
-        logger.info(f"  🛡️  Drawdown Protection: {AggressiveStrategy.MAX_INTRADAY_DRAWDOWN}% from peak")
         logger.info("="*80)
         
         # Track bot runtime
@@ -148,6 +83,37 @@ class AggressiveRecoveryBot:
             api_secret=Config.API_SECRET,
             base_url=Config.BASE_URL
         )
+        
+        # Get actual balance from Binance (if not DEMO_MODE)
+        actual_balance = Config.STARTING_BALANCE
+        if not Config.DEMO_MODE:
+            try:
+                account = self.client.account()
+                for asset in account['balances']:
+                    if asset['asset'] == 'USDT':
+                        actual_balance = float(asset['free'])
+                        logger.info(f"💰 ดึงยอดเงินจาก Binance: ${actual_balance:,.2f} USDT")
+                        break
+            except Exception as e:
+                logger.warning(f"⚠️ ไม่สามารถดึงยอดเงินจาก API: {e}")
+                logger.warning(f"⚠️ ใช้ยอดเงินจาก config แทน: ${actual_balance:.2f}")
+        
+        logger.info(f"💼 โหมด: {'DEMO (ทดสอบปลอดภัย)' if Config.DEMO_MODE else 'LIVE ⚠️ เงินจริง!'}")
+        logger.info(f"💰 ทุนเริ่มต้น: ${actual_balance:,.2f}")
+        logger.info(f"📊 Symbols: {len(Config.SYMBOL_POOL)} pool, {Config.MAX_ACTIVE_SYMBOLS} active")
+        logger.info(f"⏱️  Timeframe: {Config.TIMEFRAME} (Fast Scalping)")
+        logger.info(f"🎯 เป้าหมาย STRICT: +{Config.AGGRESSIVE_DAILY_TARGET}% แล้วหยุดทันที!")
+        logger.info("-"*80)
+        logger.info("⚡ กลยุทธ์ที่ปรับปรุง v2.1 (Ultra-Selective)".center(80))
+        logger.info("-"*80)
+        logger.info(f"  ✅ TP เพิ่มขึ้น: {Config.AGGRESSIVE_QUICK_TP}%-{Config.AGGRESSIVE_STRONG_TP}% (RR ดีขึ้น)")
+        logger.info(f"  🛡️  SL ปลอดภัย: {Config.AGGRESSIVE_TIGHT_SL}%-{Config.AGGRESSIVE_WIDE_SL}% (ป้องกันดี)")
+        logger.info(f"  🔄 Martingale ปลอดภัย: {Config.AGGRESSIVE_MARTINGALE_MULTIPLIER}x Max {Config.AGGRESSIVE_MAX_MARTINGALE_LEVEL} level")
+        logger.info(f"  🚫 Averaging: {'Disabled' if not Config.AGGRESSIVE_ENABLE_AVERAGING else 'Enabled'} (ป้องกันการทบทุน)")
+        logger.info(f"  📊 Signal Quality: {Config.AGGRESSIVE_MIN_SIGNAL_STRENGTH}/5, {Config.AGGRESSIVE_MIN_CONFLUENCE_SIGNALS}/4 (เข้มงวดสูงสุด!)")
+        logger.info(f"  ⏰ Check: {Config.CHECK_INTERVAL}s (ลดสัญญาณรบกวน)")
+        logger.info(f"  🛡️  Drawdown Protection: {Config.AGGRESSIVE_MAX_INTRADAY_DRAWDOWN}% from peak")
+        logger.info("="*80)
         
         # Core managers
         self.symbol_manager = SymbolManager(
@@ -161,7 +127,7 @@ class AggressiveRecoveryBot:
             max_per_symbol=5  # อนุญาตหลาย position ต่อ symbol (averaging)
         )
         
-        self.trade_history = TradeHistory(starting_balance=Config.STARTING_BALANCE)
+        self.trade_history = TradeHistory(starting_balance=actual_balance)
         
         self.trailing_stop_manager = TrailingStopManager(
             trail_percent=0.3,  # ไล่เร็วกว่า
@@ -179,7 +145,7 @@ class AggressiveRecoveryBot:
         self.risk_manager = None
         if Config.ENABLE_ADVANCED_RISK:
             try:
-                self.risk_manager = RiskManager(initial_capital=Config.STARTING_BALANCE)
+                self.risk_manager = RiskManager(initial_capital=actual_balance)
             except:
                 pass
         
@@ -220,7 +186,7 @@ class AggressiveRecoveryBot:
         self.trading_paused = False
         self.profit_locked = False
         self.cycle_count = 0
-        self.daily_peak_balance = Config.STARTING_BALANCE  # Track peak for drawdown protection
+        self.daily_peak_balance = actual_balance  # Track peak for drawdown protection
         
         # Telegram
         if Config.TELEGRAM_ENABLED:
@@ -471,17 +437,17 @@ class AggressiveRecoveryBot:
         
         # Adjust based on win/loss streak
         if self.consecutive_wins >= 3:
-            size_multiplier = AggressiveStrategy.WIN_STREAK_BONUS
+            size_multiplier = Config.AGGRESSIVE_WIN_STREAK_BONUS
             logger.info(f"🔥 Win streak! Size +{(size_multiplier-1)*100:.0f}%")
         elif self.consecutive_losses >= 2 and not is_recovery:
-            size_multiplier = AggressiveStrategy.LOSS_REDUCTION
+            size_multiplier = Config.AGGRESSIVE_LOSS_REDUCTION
             logger.info(f"⚠️ Loss streak, reducing size -{(1-size_multiplier)*100:.0f}%")
         else:
             size_multiplier = 1.0
         
         # Recovery mode - use Martingale
-        if is_recovery and AggressiveStrategy.ENABLE_SMART_MARTINGALE:
-            martingale_mult = AggressiveStrategy.MARTINGALE_MULTIPLIER
+        if is_recovery and Config.AGGRESSIVE_ENABLE_SMART_MARTINGALE:
+            martingale_mult = Config.AGGRESSIVE_MARTINGALE_MULTIPLIER
             level = self.martingale_level.get(symbol, 0)
             size_multiplier *= (martingale_mult ** level)
             logger.info(f"🔄 Martingale Level {level}: Size {size_multiplier:.2f}x")
@@ -501,7 +467,7 @@ class AggressiveRecoveryBot:
     
     def should_enter_recovery_position(self, symbol: str, current_price: float) -> bool:
         """Check if should add averaging/recovery position"""
-        if not AggressiveStrategy.ENABLE_AVERAGING:
+        if not Config.AGGRESSIVE_ENABLE_AVERAGING:
             return False
         
         # Check if we have an existing position in recovery
@@ -512,13 +478,13 @@ class AggressiveRecoveryBot:
         
         # Check averaging count
         avg_count = self.symbol_states[symbol]["averaging_count"]
-        if avg_count >= AggressiveStrategy.MAX_AVERAGING_TIMES:
+        if avg_count >= Config.AGGRESSIVE_MAX_AVERAGING_TIMES:
             return False
         
         # Check price distance
         price_diff_pct = abs(current_price - last_position.entry_price) / last_position.entry_price * 100
         
-        if price_diff_pct >= AggressiveStrategy.AVERAGING_DISTANCE:
+        if price_diff_pct >= Config.AGGRESSIVE_AVERAGING_DISTANCE:
             # Check if price moved in losing direction
             if last_position.side == "BUY" and current_price < last_position.entry_price:
                 return True
@@ -537,14 +503,14 @@ class AggressiveRecoveryBot:
         sell_strength = signals.get("sell_strength", 0)
         
         # Lower threshold for entry
-        if buy_strength < AggressiveStrategy.MIN_SIGNAL_STRENGTH and sell_strength < AggressiveStrategy.MIN_SIGNAL_STRENGTH:
+        if buy_strength < Config.AGGRESSIVE_MIN_SIGNAL_STRENGTH and sell_strength < Config.AGGRESSIVE_MIN_SIGNAL_STRENGTH:
             return
         
         # Determine side
-        if buy_strength >= AggressiveStrategy.MIN_SIGNAL_STRENGTH and buy_strength > sell_strength:
+        if buy_strength >= Config.AGGRESSIVE_MIN_SIGNAL_STRENGTH and buy_strength > sell_strength:
             side = "BUY"
             signal_strength = buy_strength
-        elif sell_strength >= AggressiveStrategy.MIN_SIGNAL_STRENGTH and sell_strength > buy_strength:
+        elif sell_strength >= Config.AGGRESSIVE_MIN_SIGNAL_STRENGTH and sell_strength > buy_strength:
             side = "SELL"
             signal_strength = sell_strength
         else:
@@ -553,7 +519,7 @@ class AggressiveRecoveryBot:
         # Check if this is a recovery entry
         is_recovery = (self.last_loss_symbol == symbol and 
                       self.consecutive_losses > 0 and
-                      self.martingale_level.get(symbol, 0) < AggressiveStrategy.MAX_MARTINGALE_LEVEL)
+                      self.martingale_level.get(symbol, 0) < Config.AGGRESSIVE_MAX_MARTINGALE_LEVEL)
         
         # Check if should do averaging
         is_averaging = self.should_enter_recovery_position(symbol, signals["current_price"])
@@ -576,13 +542,13 @@ class AggressiveRecoveryBot:
         
         # Aggressive TP/SL
         if signal_strength >= 5.0:
-            take_profit_percent = AggressiveStrategy.STRONG_TP_PERCENT
+            take_profit_percent = Config.AGGRESSIVE_STRONG_TP_PERCENT
         elif signal_strength >= 3.5:
-            take_profit_percent = AggressiveStrategy.MEDIUM_TP_PERCENT
+            take_profit_percent = Config.AGGRESSIVE_MEDIUM_TP_PERCENT
         else:
-            take_profit_percent = AggressiveStrategy.QUICK_TP_PERCENT
+            take_profit_percent = Config.AGGRESSIVE_QUICK_TP_PERCENT
         
-        stop_loss_percent = AggressiveStrategy.TIGHT_SL_PERCENT
+        stop_loss_percent = Config.AGGRESSIVE_TIGHT_SL_PERCENT
         
         # Calculate prices
         if side == "BUY":
@@ -628,10 +594,10 @@ class AggressiveRecoveryBot:
             
             if is_recovery:
                 level = self.martingale_level.get(symbol, 0)
-                logger.info(f"🔄 Martingale Level: {level}/{AggressiveStrategy.MAX_MARTINGALE_LEVEL}")
+                logger.info(f"🔄 Martingale Level: {level}/{Config.AGGRESSIVE_MAX_MARTINGALE_LEVEL}")
             elif is_averaging:
                 avg_count = self.symbol_states[symbol]["averaging_count"]
-                logger.info(f"📊 Averaging: {avg_count}/{AggressiveStrategy.MAX_AVERAGING_TIMES}")
+                logger.info(f"📊 Averaging: {avg_count}/{Config.AGGRESSIVE_MAX_AVERAGING_TIMES}")
             
             logger.info("="*80)
             
@@ -685,7 +651,7 @@ class AggressiveRecoveryBot:
             if exit_reason is None:
                 time_in_position = (datetime.now(UTC) - position.entry_time).total_seconds()
                 is_recovery = symbol in self.recovery_positions and position in self.recovery_positions.get(symbol, [])
-                time_limit = AggressiveStrategy.TIME_STOP_RECOVERY if is_recovery else AggressiveStrategy.TIME_STOP_FAST
+                time_limit = Config.AGGRESSIVE_TIME_STOP_RECOVERY if is_recovery else Config.AGGRESSIVE_TIME_STOP_FAST
                 
                 if time_in_position >= time_limit:
                     exit_reason = f"Time ({int(time_in_position)}s)"
@@ -740,7 +706,7 @@ class AggressiveRecoveryBot:
             if symbol not in self.martingale_level:
                 self.martingale_level[symbol] = 0
             
-            if self.martingale_level[symbol] < AggressiveStrategy.MAX_MARTINGALE_LEVEL:
+            if self.martingale_level[symbol] < Config.AGGRESSIVE_MAX_MARTINGALE_LEVEL:
                 self.martingale_level[symbol] += 1
                 logger.warning(f"🔄 Loss! Martingale {symbol} → Level {self.martingale_level[symbol]}")
         
@@ -799,7 +765,7 @@ class AggressiveRecoveryBot:
             self.daily_peak_balance = current_balance
         
         # 🎯 STRICT 5% TARGET - IMMEDIATE STOP (Phase 4)
-        if daily_pnl >= AggressiveStrategy.DAILY_TARGET:
+        if daily_pnl >= Config.AGGRESSIVE_DAILY_TARGET:
             logger.info("="*80)
             logger.info(f"🎯 5% TARGET REACHED: +{daily_pnl:.2f}% - STOPPING IMMEDIATELY!".center(80))
             logger.info("="*80)
@@ -815,20 +781,20 @@ class AggressiveRecoveryBot:
             return
         
         # 📊 Profit milestone notification at +3% (Phase 4)
-        if not self.profit_locked and daily_pnl >= AggressiveStrategy.QUICK_PROFIT_LOCK:
+        if not self.profit_locked and daily_pnl >= Config.AGGRESSIVE_QUICK_PROFIT_LOCK:
             self.profit_locked = True
             logger.info(f"📊 Approaching target: +{daily_pnl:.2f}% (Target: +5%)")
             self.send_telegram(
                 f"📊 <b>Good Progress!</b>\n"
                 f"Daily: +{daily_pnl:.2f}%\n"
-                f"Target: +{AggressiveStrategy.DAILY_TARGET}%\n"
-                f"Remaining: {AggressiveStrategy.DAILY_TARGET - daily_pnl:.2f}%\n"
+                f"Target: +{Config.AGGRESSIVE_DAILY_TARGET}%\n"
+                f"Remaining: {Config.AGGRESSIVE_DAILY_TARGET - daily_pnl:.2f}%\n"
                 f"Keep going! 🚀"
             )
         
         # 🛡️ INTRADAY DRAWDOWN PROTECTION (Phase 4)
         drawdown_from_peak = ((current_balance - self.daily_peak_balance) / self.daily_peak_balance) * 100
-        if drawdown_from_peak <= AggressiveStrategy.MAX_INTRADAY_DRAWDOWN:
+        if drawdown_from_peak <= Config.AGGRESSIVE_MAX_INTRADAY_DRAWDOWN:
             logger.error("="*80)
             logger.error(f"🛡️ INTRADAY DRAWDOWN LIMIT: {drawdown_from_peak:.2f}% from peak".center(80))
             logger.error("="*80)
@@ -843,7 +809,7 @@ class AggressiveRecoveryBot:
             return
         
         # 🛑 MAX DAILY LOSS
-        if daily_pnl <= AggressiveStrategy.MAX_DAILY_LOSS:
+        if daily_pnl <= Config.AGGRESSIVE_MAX_DAILY_LOSS:
             logger.error(f"🛑 MAX DAILY LOSS: {daily_pnl:.2f}%")
             self.send_telegram(
                 f"🛑 <b>MAX LOSS LIMIT</b>\n"
@@ -879,26 +845,31 @@ class AggressiveRecoveryBot:
             signals = self.calculate_signals(symbol, data)
             self.try_entry(symbol, signals, data)
         
-        # Status display
-        if self.cycle_count % 5 == 0:
-            self._display_status()
+        # Status display every cycle
+        self._display_status()
     
     def _display_status(self):
-        """Display compact status"""
+        """Display compact status every cycle"""
         positions = self.position_manager.get_all_positions()
         pos_count = len(positions)
         daily_pnl = self.trade_history.get_daily_pnl_percent()
         balance = self.trade_history.current_balance
         win_rate = self.trade_history.get_win_rate()
+        total_trades = len(self.trade_history.trades)
         
         perf = "🚀" if daily_pnl > 3 else ("📈" if daily_pnl > 0 else "🔴")
         
+        # แสดงข้อมูลโดยละเอียด
         logger.info(
+            f"\n{'='*80}\n"
             f"Cycle #{self.cycle_count:04d} │ "
-            f"{perf}${balance:.2f} ({daily_pnl:+.1f}%) │ "
-            f"Pos: {pos_count} │ "
-            f"WR: {win_rate:.0f}% │ "
-            f"Streak: {self.consecutive_wins}W/{self.consecutive_losses}L"
+            f"{perf} ${balance:.2f} ({daily_pnl:+.2f}%) │ "
+            f"Trades: {total_trades} │ "
+            f"WR: {win_rate:.1f}%\n"
+            f"Positions: {pos_count}/{Config.MAX_TOTAL_POSITIONS} │ "
+            f"Streak: {self.consecutive_wins}W/{self.consecutive_losses}L │ "
+            f"Target: {Config.AGGRESSIVE_DAILY_TARGET}%\n"
+            f"{'='*80}"
         )
     
     def run(self):
@@ -908,17 +879,17 @@ class AggressiveRecoveryBot:
         
         self.send_telegram(
             f"🔥 <b>Aggressive Recovery Bot Started</b>\n\n"
-            f"💰 Capital: ${Config.STARTING_BALANCE}\n"
-            f"🎯 Target: +{AggressiveStrategy.DAILY_TARGET}% to +{AggressiveStrategy.DAILY_MAX}%\n"
+            f"💰 Capital: ${self.trade_history.current_balance:.2f}\n"
+            f"🎯 Target: +{Config.AGGRESSIVE_DAILY_TARGET}% to +{Config.AGGRESSIVE_DAILY_MAX}%\n"
             f"⚡ Strategy: Fast scalping + Smart recovery\n"
-            f"🔄 Martingale: {AggressiveStrategy.MARTINGALE_MULTIPLIER}x up to {AggressiveStrategy.MAX_MARTINGALE_LEVEL} levels\n\n"
+            f"🔄 Martingale: {Config.AGGRESSIVE_MARTINGALE_MULTIPLIER}x up to {Config.AGGRESSIVE_MAX_MARTINGALE_LEVEL} levels\n\n"
             f"✅ Ready to trade!"
         )
         
         try:
             while self.running:
                 self.run_cycle()
-                time.sleep(AggressiveStrategy.CHECK_INTERVAL)  # Fast check (15s)
+                time.sleep(Config.CHECK_INTERVAL)
         
         except KeyboardInterrupt:
             logger.info("\n\n🛑 Bot stopped by user")
@@ -969,7 +940,7 @@ class AggressiveRecoveryBot:
             f"Daily P&L: {daily_pnl:+.2f}%\n"
             f"Profit: ${profit:+.2f}\n"
             f"Final: ${self.trade_history.current_balance:.2f}\n\n"
-            f"Target: {'✅' if daily_pnl >= AggressiveStrategy.DAILY_TARGET else '❌'}"
+            f"Target: {'✅' if daily_pnl >= Config.AGGRESSIVE_DAILY_TARGET else '❌'}"
         )
         
         self.save_state()
@@ -980,3 +951,4 @@ class AggressiveRecoveryBot:
 if __name__ == "__main__":
     bot = AggressiveRecoveryBot()
     bot.run()
+

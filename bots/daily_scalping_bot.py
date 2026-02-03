@@ -65,8 +65,7 @@ class DailyScalpingBot:
         logger.info(f"🚀 {BOT_NAME} v{__version__}".center(80))
         logger.info("="*80)
         logger.info(f"💼 โหมด: {'DEMO (ทดสอบปลอดภัย)' if Config.DEMO_MODE else 'LIVE ⚠️ เงินจริง!'}")
-        logger.info(f"💰 ทุน: ${Config.STARTING_BALANCE:.2f}")
-        logger.info(f"📊 Symbols: {len(Config.SYMBOL_POOL)} pool, {Config.MAX_ACTIVE_SYMBOLS} active")
+        logger.info(f" Symbols: {len(Config.SYMBOL_POOL)} pool, {Config.MAX_ACTIVE_SYMBOLS} active")
         logger.info(f"⏱️  Timeframe: {Config.TIMEFRAME} (Scalping เร็ว)")
         logger.info(f"🎯 เป้าหมายรายวัน: +{Config.DAILY_PROFIT_TARGET}% ถึง +{Config.DAILY_MAX_TARGET}%")
         logger.info("-"*80)
@@ -102,6 +101,22 @@ class DailyScalpingBot:
             base_url=Config.BASE_URL
         )
         
+        # Get actual balance from Binance (if not DEMO_MODE)
+        actual_balance = Config.STARTING_BALANCE
+        if not Config.DEMO_MODE:
+            try:
+                account = self.client.account()
+                for asset in account['balances']:
+                    if asset['asset'] == 'USDT':
+                        actual_balance = float(asset['free'])
+                        logger.info(f"💰 ดึงยอดเงินจาก Binance: ${actual_balance:,.2f} USDT")
+                        break
+            except Exception as e:
+                logger.warning(f"⚠️ ไม่สามารถดึงยอดเงินจาก API: {e}")
+                logger.warning(f"⚠️ ใช้ยอดเงินจาก config แทน: ${actual_balance:.2f}")
+        
+        logger.info(f"💰 ทุนเริ่มต้น: ${actual_balance:,.2f}")
+        
         # Core managers
         self.symbol_manager = SymbolManager(
             symbol_pool=Config.SYMBOL_POOL,
@@ -111,10 +126,10 @@ class DailyScalpingBot:
         
         self.position_manager = PositionManager(
             max_total_positions=Config.MAX_TOTAL_POSITIONS,
-            max_per_symbol=StrategyConstants.MAX_POSITIONS_PER_SYMBOL
+            max_per_symbol=Config.MAX_POSITIONS_PER_SYMBOL
         )
         
-        self.trade_history = TradeHistory(starting_balance=Config.STARTING_BALANCE)
+        self.trade_history = TradeHistory(starting_balance=actual_balance)
         
         self.trailing_stop_manager = TrailingStopManager(
             trail_percent=Config.TRAILING_STOP_PERCENT,
@@ -134,7 +149,7 @@ class DailyScalpingBot:
         self.risk_manager = None
         if Config.ENABLE_ADVANCED_RISK:
             try:
-                self.risk_manager = RiskManager(initial_capital=Config.STARTING_BALANCE)
+                self.risk_manager = RiskManager(initial_capital=actual_balance)
             except Exception as e:
                 logger.warning(f"⚠️ Risk Manager ล้มลว: {e}")
         
@@ -328,8 +343,8 @@ class DailyScalpingBot:
             close_prices = data["close"]
             
             # Calculate EMAs
-            ema_fast = np.mean(close_prices[-StrategyConstants.EMA_FAST:]) if len(close_prices) >= StrategyConstants.EMA_FAST else None
-            ema_slow = np.mean(close_prices[-StrategyConstants.EMA_SLOW:]) if len(close_prices) >= StrategyConstants.EMA_SLOW else None
+            ema_fast = np.mean(close_prices[-Config.EMA_FAST:]) if len(close_prices) >= Config.EMA_FAST else None
+            ema_slow = np.mean(close_prices[-Config.EMA_SLOW:]) if len(close_prices) >= Config.EMA_SLOW else None
             
             if ema_fast is None or ema_slow is None:
                 return None
@@ -348,7 +363,7 @@ class DailyScalpingBot:
     
     def check_volume_quality(self, volumes: np.ndarray) -> bool:
         """Check if current volume meets quality threshold"""
-        if not StrategyConstants.USE_VOLUME_QUALITY_FILTER:
+        if not Config.USE_VOLUME_QUALITY_FILTER:
             return True
         
         if len(volumes) < StrategyConstants.VOLUME_PERIOD:
@@ -361,7 +376,7 @@ class DailyScalpingBot:
             return True
         
         volume_ratio = current_volume / avg_volume
-        return volume_ratio >= StrategyConstants.MIN_VOLUME_RATIO
+        return volume_ratio >= Config.MIN_VOLUME_RATIO
     
     def calculate_progressive_recovery_size(self, consecutive_losses: int) -> float:
         """Calculate position size multiplier using progressive Kelly-based recovery"""
@@ -410,18 +425,18 @@ class DailyScalpingBot:
         current_price = data["current_price"]
         
         # Calculate indicators
-        rsi = Indicators.calculate_rsi(close_prices, StrategyConstants.RSI_PERIOD)
+        rsi = Indicators.calculate_rsi(close_prices, Config.RSI_PERIOD)
         bb_upper, bb_middle, bb_lower = Indicators.calculate_bollinger_bands(
-            close_prices, StrategyConstants.BB_PERIOD, StrategyConstants.BB_STD_DEV
+            close_prices, Config.BB_PERIOD, Config.BB_STD_DEV
         )
         macd_line, macd_signal, macd_hist = Indicators.calculate_macd(
-            close_prices, StrategyConstants.MACD_FAST, StrategyConstants.MACD_SLOW, StrategyConstants.MACD_SIGNAL
+            close_prices, Config.MACD_FAST, Config.MACD_SLOW, Config.MACD_SIGNAL
         )
-        atr = Indicators.calculate_atr(high_prices, low_prices, close_prices, StrategyConstants.ATR_PERIOD)
+        atr = Indicators.calculate_atr(high_prices, low_prices, close_prices, Config.ATR_PERIOD)
         
         # Calculate EMAs for trend filter
-        ema_fast = np.mean(close_prices[-StrategyConstants.EMA_FAST:]) if len(close_prices) >= StrategyConstants.EMA_FAST else current_price
-        ema_slow = np.mean(close_prices[-StrategyConstants.EMA_SLOW:]) if len(close_prices) >= StrategyConstants.EMA_SLOW else current_price
+        ema_fast = np.mean(close_prices[-Config.EMA_FAST:]) if len(close_prices) >= Config.EMA_FAST else current_price
+        ema_slow = np.mean(close_prices[-Config.EMA_SLOW:]) if len(close_prices) >= Config.EMA_SLOW else current_price
         is_uptrend = ema_fast > ema_slow
         is_downtrend = ema_fast < ema_slow
         
@@ -436,14 +451,14 @@ class DailyScalpingBot:
         signal_details = []
         
         # 1. RSI Signal (weighted by extremity)
-        if rsi < StrategyConstants.RSI_OVERSOLD:
+        if rsi < Config.RSI_OVERSOLD:
             if rsi < StrategyConstants.RSI_EXTREME_THRESHOLD:
                 buy_strength += 2.0  # Very oversold
                 signal_details.append(f"RSI<{StrategyConstants.RSI_EXTREME_THRESHOLD}⭐")
             else:
                 buy_strength += 1.0
                 signal_details.append("RSI<30")
-        elif rsi > StrategyConstants.RSI_OVERBOUGHT:
+        elif rsi > Config.RSI_OVERBOUGHT:
             if rsi > (100 - StrategyConstants.RSI_EXTREME_THRESHOLD):
                 sell_strength += 2.0  # Very overbought
                 signal_details.append(f"RSI>{100-StrategyConstants.RSI_EXTREME_THRESHOLD}⭐")
@@ -611,11 +626,11 @@ class DailyScalpingBot:
             return False, f"Out of trading hours ({StrategyConstants.TRADING_START_HOUR}-{StrategyConstants.TRADING_END_HOUR} UTC)"
         
         # 2. Sideways market filter
-        if signals["bb_width"] < StrategyConstants.SIDEWAYS_THRESHOLD:
+        if signals["bb_width"] < Config.SIDEWAYS_THRESHOLD:
             return False, "Sideways market"
         
         # 3. Volume quality filter
-        if data and StrategyConstants.USE_VOLUME_QUALITY_FILTER:
+        if data and Config.USE_VOLUME_QUALITY_FILTER:
             if not self.check_volume_quality(data["volume"]):
                 return False, "Low volume quality"
         
@@ -686,14 +701,14 @@ class DailyScalpingBot:
             sell_strength = signals.get("sell_strength", 0)
             
             # Check minimum strength threshold
-            if buy_strength < StrategyConstants.MIN_SIGNAL_STRENGTH and sell_strength < StrategyConstants.MIN_SIGNAL_STRENGTH:
+            if buy_strength < Config.MIN_SIGNAL_STRENGTH and sell_strength < Config.MIN_SIGNAL_STRENGTH:
                 return  # Not strong enough
             
             # Determine side
-            if buy_strength >= StrategyConstants.MIN_SIGNAL_STRENGTH and buy_strength > sell_strength:
+            if buy_strength >= Config.MIN_SIGNAL_STRENGTH and buy_strength > sell_strength:
                 side = "BUY"
                 signal_strength = buy_strength
-            elif sell_strength >= StrategyConstants.MIN_SIGNAL_STRENGTH and sell_strength > buy_strength:
+            elif sell_strength >= Config.MIN_SIGNAL_STRENGTH and sell_strength > buy_strength:
                 side = "SELL"
                 signal_strength = sell_strength
             else:
@@ -703,7 +718,7 @@ class DailyScalpingBot:
             buy_confluence = signals["buy_signals"]
             sell_confluence = signals["sell_signals"]
             
-            required_confluence = StrategyConstants.RECOVERY_CONFLUENCE_REQUIRED if self.recovery_mode else StrategyConstants.MIN_CONFLUENCE_SIGNALS
+            required_confluence = StrategyConstants.RECOVERY_CONFLUENCE_REQUIRED if self.recovery_mode else Config.MIN_CONFLUENCE_SIGNALS
             
             if buy_confluence < required_confluence and sell_confluence < required_confluence:
                 return  # Not enough signals
@@ -876,7 +891,7 @@ class DailyScalpingBot:
             exit_reason = None
             
             # 0. Partial Take Profit (NEW!)
-            if StrategyConstants.PARTIAL_TP_ENABLED and not position.partial_tp_hit:
+            if Config.PARTIAL_TP_ENABLED and not position.partial_tp_hit:
                 profit_pct = 0
                 if position.side == "BUY":
                     profit_pct = ((current_price - position.entry_price) / position.entry_price) * 100
@@ -916,7 +931,7 @@ class DailyScalpingBot:
             if exit_reason is None:
                 time_in_position = (datetime.now(UTC) - position.entry_time).total_seconds()
                 # Use adaptive time stop based on signal strength
-                time_stop = StrategyConstants.TIME_STOP_STRONG_SIGNAL if position.confluence_score >= 4 else StrategyConstants.TIME_STOP_BASE
+                time_stop = Config.TIME_STOP_STRONG_SIGNAL if position.confluence_score >= 4 else Config.TIME_STOP_BASE
                 if time_in_position >= time_stop:
                     exit_reason = "Time"
             
@@ -1458,3 +1473,4 @@ class DailyScalpingBot:
 if __name__ == "__main__":
     bot = DailyScalpingBot()
     bot.run()
+
