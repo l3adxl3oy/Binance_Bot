@@ -61,11 +61,28 @@ if exist .venv\Scripts\activate.bat (
 
 REM Run update checker
 if exist .venv\Scripts\python.exe (
-    .venv\Scripts\python.exe -m utils.updater
+    .venv\Scripts\python.exe -c "from utils.updater import BotUpdater; updater = BotUpdater(); update_info = updater.check_for_updates(); exit(0 if update_info else 1)"
     if errorlevel 1 (
+        REM No update available
         echo.
-        echo WARNING: Unable to check for updates
+    ) else (
+        REM Update available - run CheckUpdate.bat
         echo.
+        echo ========================================
+        echo   NEW VERSION AVAILABLE!
+        echo ========================================
+        echo.
+        echo Starting CheckUpdate.bat for update...
+        echo.
+        timeout /t 2 >nul
+        if exist CheckUpdate.bat (
+            start "" /wait CheckUpdate.bat
+        )
+        REM Exit after update check
+        echo.
+        echo Please restart the bot after update
+        timeout /t 3 >nul
+        goto :EXIT
     )
 ) else (
     echo WARNING: Python environment not found
