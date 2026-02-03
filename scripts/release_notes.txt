@@ -1,0 +1,61 @@
+# 🚀 BinanceBot v3.0.0 - Initial Release
+
+## ✨ Features
+
+### 🤖 Trading Bots
+- **Daily Scalping Bot** - เหมาะสำหรับมือใหม่ (Target: 2-5% daily)
+- **Aggressive Recovery Bot** - เหมาะสำหรับมือโปร (Target: 5-8% daily)
+
+### 🧠 AI Features
+- ✅ **Event Manager** - ติดตามข่าวเศรษฐกิจและความเชื่อมั่นตลาด
+- ✅ **Risk Manager** - คำนวณความเสี่ยงและจัดการ Position Size
+- ✅ **Adaptive Strategy** - ปรับกลยุทธ์ตามสภาพตลาดอัตโนมัติ
+- ✅ **Enhanced Alerts** - แจ้งเตือนผ่าน Telegram แบบอัจฉริยะ
+
+### 📊 Trading Features
+- Multi-symbol trading (20+ pairs)
+- 1-minute scalping strategy
+- Multi-indicator confluence
+- Smart Martingale recovery (Aggressive Bot)
+- Trailing stop management
+- Telegram bot control
+
+### 🔧 Technical Features
+- Auto-update system
+- Backtesting support
+- Walk-forward testing
+- Performance analytics
+- State persistence
+
+## 📥 Installation
+
+1. Download and extract the release
+2. Run `INSTALL.bat` to install dependencies
+3. Configure `config/config.py` with your Binance API keys
+4. Run `RUN_IN_TERMINAL.bat` to start
+
+## 📚 Documentation
+
+Complete documentation is included in the `docs/` folder:
+- Quick Start Guide
+- Setup Guide
+- Bot Specifications
+- Telegram Setup
+- Backtest Guide
+
+## ⚠️ Important Notes
+
+- Test in DEMO mode first before using real money
+- Understand the risks of cryptocurrency trading
+- Read the Terms of Use before using
+- Backup your bot_state.json regularly
+
+## 🔄 Auto-Update
+
+This release includes auto-update functionality. The bot will check for updates automatically when you start it.
+
+---
+
+**Release Date:** February 3, 2026  
+**Version:** 3.0.0  
+**License:** See LICENSE.txt

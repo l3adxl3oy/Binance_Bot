@@ -67,6 +67,9 @@ class BacktestEngine:
         self.total_commission = 0
         self.total_slippage = 0
         
+        # Strategy parameters (for aggressive mode support)
+        self._current_strategy_params = None
+        
     def run_backtest(
         self,
         data: Dict[str, pd.DataFrame],
@@ -139,6 +142,9 @@ class BacktestEngine:
         if len(self.positions) < self.max_positions:
             self._check_entry_signals(timestamp, current_data, strategy_params)
         
+        # Store strategy params for position management
+        self._current_strategy_params = strategy_params
+        
         # 3. Record equity
         self._record_equity(timestamp)
     
@@ -165,11 +171,16 @@ class BacktestEngine:
             signals = self._calculate_signals(historical)
             
             # Check entry conditions
-            if self._should_enter_long(signals):
-                self._open_position(symbol, 'LONG', timestamp, data['current'])
-            elif self._should_enter_short(signals):
+            # For aggressive mode, check signal strength threshold
+            min_signal_strength = 3  # Default
+            if strategy_params and strategy_params.get('strategy_mode') == 'aggressive':
+                min_signal_strength = strategy_params.get('min_signal_strength', 3.0)
+            
+            if self._should_enter_long(signals, min_signal_strength):
+                self._open_position(symbol, 'LONG', timestamp, data['current'], strategy_params)
+            elif self._should_enter_short(signals, min_signal_strength):
                 # For spot trading, we skip shorts
-                # self._open_position(symbol, 'SHORT', timestamp, data['current'])
+                # self._open_position(symbol, 'SHORT', timestamp, data['current'], strategy_params)
                 pass
     
     def _check_exit_signals(self, timestamp: datetime, current_data: Dict):
@@ -196,7 +207,14 @@ class BacktestEngine:
             # Check time-based exit (max hold time)
             entry_time_naive = position.entry_time.replace(tzinfo=None) if position.entry_time.tzinfo else position.entry_time
             hold_time = (timestamp - entry_time_naive).total_seconds()
-            if hold_time > 3600:  # 1 hour max
+            
+            # Use strategy_params time_stop if available
+            strategy_params = getattr(self, '_current_strategy_params', None)
+            max_hold_time = 3600  # Default 1 hour
+            if strategy_params and strategy_params.get('strategy_mode') == 'aggressive':
+                max_hold_time = strategy_params.get('time_stop_seconds', 600)
+            
+            if hold_time > max_hold_time:
                 positions_to_close.append((symbol, current_price, 'TIME_EXIT'))
                 continue
             
@@ -204,7 +222,9 @@ class BacktestEngine:
             historical = current_data[symbol]['historical']
             signals = self._calculate_signals(historical)
             
-            if self._should_exit(signals, position):
+            # Get strategy params for exit logic
+            strategy_params = getattr(self, '_current_strategy_params', None)
+            if self._should_exit(signals, position, strategy_params):
                 positions_to_close.append((symbol, current_price, 'SIGNAL_EXIT'))
         
         # Close positions
@@ -267,7 +287,7 @@ class BacktestEngine:
             'current_price': current_price
         }
     
-    def _should_enter_long(self, signals: Dict) -> bool:
+    def _should_enter_long(self, signals: Dict, min_confluence: int = 3) -> bool:
         """ตรวจสอบเงื่อนไขเข้า LONG"""
         
         confluence = 0
@@ -292,10 +312,10 @@ class BacktestEngine:
         if signals['volume_ratio'] > StrategyConstants.VOLUME_MULTIPLIER:
             confluence += 1
         
-        # Need at least 3 confluences
-        return confluence >= 3
+        # Check against required confluence (default 3, aggressive might require more)
+        return confluence >= min_confluence
     
-    def _should_enter_short(self, signals: Dict) -> bool:
+    def _should_enter_short(self, signals: Dict, min_confluence: int = 3) -> bool:
         """ตรวจสอบเงื่อนไขเข้า SHORT"""
         
         confluence = 0
@@ -320,9 +340,10 @@ class BacktestEngine:
         if signals['volume_ratio'] > StrategyConstants.VOLUME_MULTIPLIER:
             confluence += 1
         
-        return confluence >= 3
+        # Check against required confluence
+        return confluence >= min_confluence
     
-    def _should_exit(self, signals: Dict, position: Position) -> bool:
+    def _should_exit(self, signals: Dict, position: Position, strategy_params: Optional[Dict] = None) -> bool:
         """ตรวจสอบเงื่อนไขออกจากเทรด"""
         
         if position.side == 'LONG':
@@ -345,7 +366,8 @@ class BacktestEngine:
         symbol: str,
         side: str,
         timestamp: datetime,
-        candle: pd.Series
+        candle: pd.Series,
+        strategy_params: Optional[Dict] = None
     ):
         """เปิดตำแหน่งเทรด"""
         
@@ -365,10 +387,23 @@ class BacktestEngine:
         commission = position_value * self.commission_rate
         self.total_commission += commission
         
-        # Calculate SL/TP
-        atr = float(candle['close']) * 0.01  # Simple 1% ATR approximation
-        stop_loss = entry_price - (2 * atr) if side == 'LONG' else entry_price + (2 * atr)
-        take_profit = entry_price + (3 * atr) if side == 'LONG' else entry_price - (3 * atr)
+        # Calculate SL/TP based on strategy mode
+        if strategy_params and strategy_params.get('strategy_mode') == 'aggressive':
+            # Use aggressive parameters from strategy_params
+            tp_pct = strategy_params.get('take_profit_pct', 0.012)  # Default 1.2%
+            sl_pct = strategy_params.get('stop_loss_pct', 0.006)    # Default 0.6%
+            
+            if side == 'LONG':
+                stop_loss = entry_price * (1 - sl_pct)
+                take_profit = entry_price * (1 + tp_pct)
+            else:
+                stop_loss = entry_price * (1 + sl_pct)
+                take_profit = entry_price * (1 - tp_pct)
+        else:
+            # Use default ATR-based calculation for non-aggressive strategies
+            atr = float(candle['close']) * 0.01  # Simple 1% ATR approximation
+            stop_loss = entry_price - (2 * atr) if side == 'LONG' else entry_price + (2 * atr)
+            take_profit = entry_price + (3 * atr) if side == 'LONG' else entry_price - (3 * atr)
         
         # Create position (note: entry_time is set automatically in Position.__init__)
         position = Position(

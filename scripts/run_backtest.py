@@ -140,21 +140,20 @@ def run_backtest(
 if __name__ == "__main__":
     # ==================== CONFIGURATION ====================
     
-    # Backtest period (past 30 days for comprehensive test)
+    # Backtest period (7 days test)
     END_DATE = datetime.now(UTC)
-    START_DATE = END_DATE - timedelta(days=30)  # ขยายจาก 7 → 30 วัน
+    START_DATE = END_DATE - timedelta(days=7)  # 7 วันย้อนหลัง
     
     # You can also specify exact dates:
-    # START_DATE = datetime(2025, 1, 1, tzinfo=UTC)
-    # END_DATE = datetime(2025, 1, 31, tzinfo=UTC)
+    # START_DATE = datetime(2026, 1, 27, tzinfo=UTC)
+    # END_DATE = datetime(2026, 2, 3, tzinfo=UTC)
     
-    # Symbols to test (Optimized - removed ETHUSDT due to poor performance)
+    # Symbols to test (Daily Scalping Bot symbols)
     SYMBOLS = [
-        'BTCUSDT',   # Best: 68.75% WR
-        # 'ETHUSDT', # ❌ REMOVED: -$18.65 total PnL
-        'BNBUSDT',   # Explosive: +$10.25
-        'SOLUSDT',   # Good: 63.16% WR
-        'ADAUSDT'    # Stable: 68.42% WR
+        'BTCUSDT',
+        'BNBUSDT',
+        'SOLUSDT',
+        'ADAUSDT'
     ]
     
     # Initial balance

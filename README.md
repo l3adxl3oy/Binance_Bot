@@ -142,7 +142,8 @@ python bots/daily_scalping_bot.py
 
 - [Setup Guide](docs/SETUP_GUIDE.md) - การติดตั้งและตั้งค่าละเอียด
 - [Quick Start Guide](docs/QUICK_START_V2.md) - เริ่มต้นใช้งานอย่างรวดเร็ว
-- [Intelligent Features](docs/INTELLIGENT_FEATURES.md) - 🆕 ระบบอัจฉริยะ v3.0 ทั้งหมด
+- [Auto-Update Guide](docs/AUTO_UPDATE_GUIDE.md) - 🆕 ระบบอัปเดตอัตโนมัติ
+- [Intelligent Features](docs/INTELLIGENT_FEATURES.md) - ระบบอัจฉริยะ v3.0 ทั้งหมด
 - [Strategy Analysis](docs/STRATEGY_ANALYSIS_V3.md) - วิเคราะห์กลยุทธ์การเทรด
 - [Telegram Commands](docs/TELEGRAM_COMMANDS_V2.md) - คำสั่ง Telegram ทั้งหมด
 - [Telegram Setup](docs/TELEGRAM_GUIDE.md) - การติดตั้ง Telegram bot

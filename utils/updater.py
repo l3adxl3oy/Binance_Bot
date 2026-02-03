@@ -141,8 +141,16 @@ class BotUpdater:
             # Files and directories to backup
             items_to_backup = [
                 'bots', 'core', 'config', 'managers', 'modules', 'utils',
-                'version.py', 'requirements.txt', 'bot_state.json'
+                'version.py', 'requirements.txt'
             ]
+            
+            # Also backup bot state files from data folder
+            data_dir = self.project_root / 'data'
+            if data_dir.exists():
+                bot_states = list(data_dir.glob('bot_state*.json'))
+                for state_file in bot_states:
+                    if state_file.exists():
+                        items_to_backup.append(f'data/{state_file.name}')
             
             backup_path.mkdir(exist_ok=True)
             
@@ -150,6 +158,8 @@ class BotUpdater:
                 src = self.project_root / item
                 if src.exists():
                     dst = backup_path / item
+                    # Create parent directory if needed (for data/bot_state.json)
+                    dst.parent.mkdir(parents=True, exist_ok=True)
                     if src.is_dir():
                         shutil.copytree(src, dst, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
                     else:

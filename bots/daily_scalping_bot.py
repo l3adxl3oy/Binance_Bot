@@ -39,6 +39,13 @@ from core.adaptive_strategy import AdaptiveStrategyEngine
 from config.config import Config
 from config.strategy_constants import StrategyConstants
 
+# Import version information
+try:
+    from version import __version__, BOT_NAME
+except ImportError:
+    __version__ = "3.0.0"
+    BOT_NAME = "BOT SCALPING อัจฉริยะ"
+
 
 # ===================== LOGGING SETUP =====================
 logging.basicConfig(
@@ -55,7 +62,7 @@ class DailyScalpingBot:
     
     def __init__(self):
         logger.info("="*80)
-        logger.info("🚀 BOT SCALPING อัจฉริยะ v3.0".center(80))
+        logger.info(f"🚀 {BOT_NAME} v{__version__}".center(80))
         logger.info("="*80)
         logger.info(f"💼 โหมด: {'DEMO (ทดสอบปลอดภัย)' if Config.DEMO_MODE else 'LIVE ⚠️ เงินจริง!'}")
         logger.info(f"💰 ทุน: ${Config.STARTING_BALANCE:.2f}")

@@ -89,6 +89,13 @@ class Config:
     TRAILING_STOP_PERCENT: float = config("TRAILING_STOP_PERCENT", default=0.2, cast=float)
     TRAILING_ACTIVATION_PROFIT: float = config("TRAILING_ACTIVATION_PROFIT", default=0.5, cast=float)
     
+    # ==================== AUTO-UPDATE ====================
+    # Auto-update configuration
+    AUTO_UPDATE_CHECK_ENABLED: bool = config("AUTO_UPDATE_CHECK_ENABLED", default=True, cast=bool)
+    AUTO_UPDATE_ON_STARTUP: bool = config("AUTO_UPDATE_ON_STARTUP", default=False, cast=bool)  # Manual approval by default
+    AUTO_UPDATE_CHECK_FREQUENCY: int = config("AUTO_UPDATE_CHECK_FREQUENCY", default=86400, cast=int)  # Check once per day (seconds)
+    AUTO_UPDATE_BACKUP_RETENTION: int = config("AUTO_UPDATE_BACKUP_RETENTION", default=5, cast=int)  # Keep last 5 backups
+    
     # ==================== ระบบ ====================
     CHECK_INTERVAL: int = config("CHECK_INTERVAL", default=30, cast=int)
     TIMEFRAME: str = config("TIMEFRAME", default="1m")
