@@ -37,6 +37,11 @@ env/
 .env
 config/bot_state.json
 bot_state.json
+bot_state_aggressive.json
+
+# Backtest data and results
+backtest/data/*.csv
+backtest/results/*.json
 
 # Logs
 *.log
