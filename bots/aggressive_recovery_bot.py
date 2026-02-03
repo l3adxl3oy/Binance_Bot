@@ -925,7 +925,7 @@ class AggressiveRecoveryBot:
         win_rate = self.trade_history.get_win_rate()
         total_trades = len(self.trade_history.trades)
         
-        perf = "🚀" if daily_pnl > 3 else ("📈" if daily_pnl > 0 else "🔴")
+        perf = "🚀" if daily_pnl > 3 else ("📈" if daily_pnl > 0 else ("⚪" if daily_pnl == 0 else "🔴"))
         
         # Event status icon
         evt_status = "✅"
