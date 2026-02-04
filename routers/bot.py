@@ -10,7 +10,7 @@ import logging
 
 from database.db import get_db
 from database.models import User, BotConfig
-from routers.auth import get_current_user
+from api.auth import get_current_user
 from managers.bot_manager import bot_manager
 
 logger = logging.getLogger(__name__)
