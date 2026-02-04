@@ -1,0 +1,81 @@
+
+========================================================================
+    RAILWAY ENVIRONMENT VARIABLES
+========================================================================
+
+คัดลอกตัวแปรเหล่านี้ไปตั้งค่าใน Railway Dashboard:
+https://railway.app/dashboard → Your Project → Variables → New Variable
+
+========================================================================
+1. SECURITY KEYS (Required)
+========================================================================
+
+JWT_SECRET_KEY=S9RCVkYrP0kpKmTaLFZXV9GeUG4oOKbNxM52dZJ5twwD0ZPx
+ENCRYPTION_KEY=k8LecZ7m5qZ15Ul31fZILAO8GL1fi7GK
+
+========================================================================
+2. BINANCE API (Required - ใส่ค่าจริงของคุณ)
+========================================================================
+
+BINANCE_API_KEY=your_binance_api_key_here
+BINANCE_API_SECRET=your_binance_api_secret_here
+BINANCE_BASE_URL=https://testnet.binance.vision
+
+Note: 
+- ใช้ testnet สำหรับทดสอบ (ปลอดภัย ไม่เสียเงินจริง)
+- ใช้ https://api.binance.com สำหรับ production (ใช้เงินจริง)
+
+========================================================================
+3. TELEGRAM NOTIFICATIONS (Optional)
+========================================================================
+
+TELEGRAM_ENABLED=false
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
+Note: ถ้าต้องการแจ้งเตือนผ่าน Telegram ให้เปลี่ยนเป็น true และใส่ token
+
+========================================================================
+4. DATABASE (Auto-configured by Railway)
+========================================================================
+
+DATABASE_URL=<Railway sets this automatically>
+
+Note: ไม่ต้องตั้งค่า Railway จัดการให้อัตโนมัติ
+
+========================================================================
+    HOW TO SET IN RAILWAY
+========================================================================
+
+Method 1: Railway Dashboard (Recommended)
+1. Go to https://railway.app/dashboard
+2. Select your project
+3. Click "Variables" tab
+4. Click "+ New Variable"
+5. Add each variable one by one
+6. Click "Deploy" to apply changes
+
+Method 2: Railway CLI
+1. Install: npm install -g @railway/cli
+2. Login: railway login
+3. Link: railway link
+4. Set each variable:
+   railway variables set JWT_SECRET_KEY=S9RCVkYrP0kpKmTaLFZXV9GeUG4oOKbNxM52dZJ5twwD0ZPx
+   railway variables set ENCRYPTION_KEY=k8LecZ7m5qZ15Ul31fZILAO8GL1fi7GK
+   (repeat for all variables)
+
+========================================================================
+    VERIFICATION
+========================================================================
+
+After setting variables, verify your deployment:
+
+1. Check Railway logs:
+   railway logs
+
+2. Test health endpoint:
+   curl https://your-app.railway.app/api/health
+
+3. Test with bot startup to ensure Binance API keys work
+
+========================================================================

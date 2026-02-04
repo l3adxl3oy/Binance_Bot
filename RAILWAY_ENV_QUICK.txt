@@ -1,0 +1,46 @@
+# Quick Railway Environment Variables - Copy & Paste to Dashboard
+
+# ==================== COPY THESE TO RAILWAY ====================
+
+# 1. Security (Required)
+JWT_SECRET_KEY=S9RCVkYrP0kpKmTaLFZXV9GeUG4oOKbNxM52dZJ5twwD0ZPx
+ENCRYPTION_KEY=k8LecZ7m5qZ15Ul31fZILAO8GL1fi7GK
+
+# 2. Binance API (Required - Replace with your real keys)
+BINANCE_API_KEY=your_binance_api_key_here
+BINANCE_API_SECRET=your_binance_api_secret_here
+BINANCE_BASE_URL=https://testnet.binance.vision
+
+# 3. Telegram (Optional)
+TELEGRAM_ENABLED=false
+
+# ==================== INSTRUCTIONS ====================
+
+# Go to: https://railway.app/dashboard
+# 1. Select your project
+# 2. Click "Variables" tab
+# 3. Click "+ New Variable" button
+# 4. Add each variable above (one at a time)
+# 5. Click "Deploy" button to apply changes
+
+# ==================== NOTES ====================
+
+# For TESTNET (Safe - No real money):
+#   BINANCE_BASE_URL=https://testnet.binance.vision
+#   Get testnet API keys from: https://testnet.binance.vision/
+
+# For PRODUCTION (Real money - Be careful!):
+#   BINANCE_BASE_URL=https://api.binance.com
+#   Get production API keys from: https://www.binance.com/en/my/settings/api-management
+
+# For Telegram notifications:
+#   TELEGRAM_ENABLED=true
+#   TELEGRAM_BOT_TOKEN=your_bot_token_from_@BotFather
+#   TELEGRAM_CHAT_ID=your_chat_id
+
+# ==================== VERIFY DEPLOYMENT ====================
+
+# After setting variables, check:
+# 1. Railway logs for any errors
+# 2. Health endpoint: https://your-app.railway.app/api/health
+# 3. API docs: https://your-app.railway.app/docs
