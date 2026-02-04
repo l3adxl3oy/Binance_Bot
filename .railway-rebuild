@@ -1,0 +1,17 @@
+# Force Railway Rebuild
+# Updated: 2026-02-04 14:20
+
+This file is touched to force Railway to rebuild.
+
+## What's Fixed:
+- Fixed import path: routers.auth -> api.auth
+- Added debug logging for router imports
+- All routers should now mount successfully
+
+## Expected in logs:
+```
+✅ auth_router imported
+✅ configs_router imported
+✅ bot_router imported
+✅ All routers successfully mounted!
+```
