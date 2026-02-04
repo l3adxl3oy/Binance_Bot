@@ -19,14 +19,31 @@ pwd_context = CryptContext(
 )
 
 # JWT settings
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-this-in-production")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production"))
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
 # API Key encryption (Fernet symmetric encryption)
-# In production, load this from environment variable
-ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", Fernet.generate_key().decode())
-fernet = Fernet(ENCRYPTION_KEY.encode() if isinstance(ENCRYPTION_KEY, str) else ENCRYPTION_KEY)
+# Lazy initialization to avoid import errors
+_fernet = None
+
+def get_fernet():
+    """Get or create Fernet cipher instance"""
+    global _fernet
+    if _fernet is None:
+        encryption_key = os.getenv("ENCRYPTION_KEY")
+        if not encryption_key:
+            # Generate a key for development only
+            encryption_key = Fernet.generate_key().decode()
+            print("[WARNING] ENCRYPTION_KEY not set - using temporary key (data will not persist!)")
+        
+        try:
+            _fernet = Fernet(encryption_key.encode() if isinstance(encryption_key, str) else encryption_key)
+        except Exception as e:
+            print(f"[ERROR] Invalid ENCRYPTION_KEY: {e}")
+            # Fallback to generated key
+            _fernet = Fernet(Fernet.generate_key())
+    return _fernet
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -121,7 +138,7 @@ def encrypt_api_key(api_key: str) -> str:
     Returns:
         Encrypted API key (base64 encoded)
     """
-    encrypted = fernet.encrypt(api_key.encode())
+    encrypted = get_fernet().encrypt(api_key.encode())
     return base64.b64encode(encrypted).decode()
 
 
@@ -136,7 +153,7 @@ def decrypt_api_key(encrypted_key: str) -> str:
         Plain API key
     """
     encrypted = base64.b64decode(encrypted_key.encode())
-    decrypted = fernet.decrypt(encrypted)
+    decrypted = get_fernet().decrypt(encrypted)
     return decrypted.decode()
 
 
