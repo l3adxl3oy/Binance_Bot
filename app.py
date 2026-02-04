@@ -151,25 +151,25 @@ templates = Jinja2Templates(directory="templates")
 # ==================== MOUNT API ROUTERS ====================
 # Import and mount authentication and config management routers
 try:
-    print("🔄 Starting to import routers...")
+    print("[ ] Starting to import routers...")
     from api.auth import router as auth_router
-    print("✅ auth_router imported")
+    print("[OK] auth_router imported")
     from api.configs import router as configs_router
-    print("✅ configs_router imported")
+    print("[OK] configs_router imported")
     from routers.bot import router as bot_router
-    print("✅ bot_router imported")
+    print("[OK] bot_router imported")
     
     app.include_router(auth_router)
-    print("✅ auth_router mounted")
+    print("[OK] auth_router mounted")
     app.include_router(configs_router)
-    print("✅ configs_router mounted")
+    print("[OK] configs_router mounted")
     app.include_router(bot_router)
-    print("✅ bot_router mounted")
-    print("✅ All routers successfully mounted!")
+    print("[OK] bot_router mounted")
+    print("[SUCCESS] All routers successfully mounted!")
 except Exception as e:
     import traceback
-    print(f"❌ Failed to mount routers: {e}")
-    print(f"❌ Traceback: {traceback.format_exc()}")
+    print(f"[ERROR] Failed to mount routers: {e}")
+    print(f"[ERROR] Traceback: {traceback.format_exc()}")
 
 
 # ==================== WEBSOCKET MANAGER ====================
