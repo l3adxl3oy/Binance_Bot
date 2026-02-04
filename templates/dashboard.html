@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Binance Trading Bot</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <!-- Monaco Editor -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>🤖 Binance Bot</h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#overview" class="nav-item active" onclick="showTab('overview')">
+                    <span class="icon">📊</span> Overview
+                </a>
+                <a href="#configs" class="nav-item" onclick="showTab('configs')">
+                    <span class="icon">⚙️</span> Configurations
+                </a>
+                <a href="#bot" class="nav-item" onclick="showTab('bot')">
+                    <span class="icon">🤖</span> Bot Control
+                </a>
+                <a href="#trades" class="nav-item" onclick="showTab('trades')">
+                    <span class="icon">💰</span> Trades
+                </a>
+                <a href="#settings" class="nav-item" onclick="showTab('settings')">
+                    <span class="icon">🔧</span> Settings
+                </a>
+            </nav>
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="user-name">Loading...</div>
+                    <div class="user-email" id="user-email"></div>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Tab -->
+            <div id="tab-overview" class="tab-content active">
+                <div class="page-header">
+                    <h1>Dashboard Overview</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="refreshData()">
+                            <span class="icon">🔄</span> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Bot Status</div>
+                        <div class="stat-value" id="bot-status">Stopped</div>
+                        <div class="stat-change" id="bot-uptime"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Trades</div>
+                        <div class="stat-value" id="total-trades">0</div>
+                        <div class="stat-change positive">+0 today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total P&L</div>
+                        <div class="stat-value" id="total-pnl">$0.00</div>
+                        <div class="stat-change" id="pnl-change">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Win Rate</div>
+                        <div class="stat-value" id="win-rate">0%</div>
+                        <div class="stat-change">0/0 wins</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <h3>Recent Activity</h3>
+                        <div id="activity-log" class="activity-log">
+                            <p class="empty-state">No recent activity</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Active Configuration</h3>
+                        <div id="active-config-info">
+                            <p class="empty-state">No configuration selected</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurations Tab -->
+            <div id="tab-configs" class="tab-content">
+                <div class="page-header">
+                    <h1>Configurations</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="showNewConfigModal()">
+                            <span class="icon">➕</span> New Config
+                        </button>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>Templates</h3>
+                    <div class="template-grid" id="template-grid">
+                        <!-- Templates loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>My Configurations</h3>
+                    <div class="config-list" id="config-list">
+                        <!-- Configs loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Control Tab -->
+            <div id="tab-bot" class="tab-content">
+                <div class="page-header">
+                    <h1>Bot Control</h1>
+                </div>
+
+                <div class="bot-control-panel">
+                    <div class="card">
+                        <h3>Current Status</h3>
+                        <div class="status-display">
+                            <div class="status-indicator" id="status-indicator">
+                                <span class="status-dot stopped"></span>
+                                <span id="status-text">Stopped</span>
+                            </div>
+                        </div>
+                        <div class="control-buttons">
+                            <button class="btn btn-success" id="btn-start" onclick="startBot()">
+                                <span class="icon">▶️</span> Start Bot
+                            </button>
+                            <button class="btn btn-danger" id="btn-stop" onclick="stopBot()" disabled>
+                                <span class="icon">⏹️</span> Stop Bot
+                            </button>
+                            <button class="btn btn-warning" id="btn-restart" onclick="restartBot()" disabled>
+                                <span class="icon">🔄</span> Restart
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Live Logs</h3>
+                        <div class="log-viewer" id="log-viewer">
+                            <p class="empty-state">No logs yet. Start the bot to see activity.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trades Tab -->
+            <div id="tab-trades" class="tab-content">
+                <div class="page-header">
+                    <h1>Trade History</h1>
+                    <div class="header-actions">
+                        <select class="filter-select" id="trade-filter">
+                            <option value="all">All Trades</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <table class="trade-table" id="trade-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>P&L</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trade-tbody">
+                            <tr>
+                                <td colspan="7" class="empty-state">No trades yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-content">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="card">
+                        <h3>Profile Information</h3>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="settings-username" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="settings-email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Member Since</label>
+                            <input type="text" id="settings-created" readonly>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>API Keys</h3>
+                        <form onsubmit="saveAPIKeys(event)">
+                            <div class="form-group">
+                                <label>Binance API Key</label>
+                                <input type="text" id="api-key" placeholder="Enter your Binance API Key">
+                            </div>
+                            <div class="form-group">
+                                <label>Binance API Secret</label>
+                                <input type="password" id="api-secret" placeholder="Enter your Binance API Secret">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="use-testnet">
+                                    Use Testnet (Recommended for testing)
+                                </label>
+                            </div>
+                            <div class="api-key-status" id="api-key-status"></div>
+                            <button type="submit" class="btn btn-primary">Save API Keys</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Config Editor Modal -->
+    <div id="config-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modal-title">Edit Configuration</h2>
+                <button class="modal-close" onclick="closeConfigModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="config-editor-container">
+                    <div class="editor-toolbar">
+                        <input type="text" id="config-name" placeholder="Configuration Name" class="config-name-input">
+                        <button class="btn btn-secondary" onclick="validateConfig()">
+                            <span class="icon">✓</span> Validate
+                        </button>
+                    </div>
+                    <div id="monaco-editor" style="height: 500px; border: 1px solid #ddd;"></div>
+                    <div id="validation-result" class="validation-result"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfigModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveConfig()">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/config-editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+# Aggressive Recovery Strategy v2.0
+# Higher risk, lower signal requirement, martingale enabled
+# Suitable for: Experienced traders, higher risk tolerance
+
+config_version: "2.0"
+strategy_name: "Aggressive Recovery"
+bot_type: "AGGRESSIVE_RECOVERY"
+
+# Signal Configuration
+min_signal_strength: 2.5  # 0.0-5.0 (lower = more trades, higher risk)
+max_positions: 10         # Maximum concurrent positions (includes recovery)
+max_active_symbols: 6     # Number of symbols to actively monitor
+position_size_percent: 1.5  # % of balance per trade (higher risk)
+
+# Risk Management
+risk_management:
+  atr_sl_multiplier: 1.2      # Tighter stop loss
+  atr_tp_multiplier: 4.5      # Wider take profit
+  max_loss_per_trade: 0.15    # Max loss per trade (% of balance)
+  daily_profit_target: 5.0    # Daily profit goal (%)
+  max_daily_loss: 5.0         # Max daily loss limit (%)
+
+# Aggressive Features
+enable_martingale: true            # Enable position averaging on losses
+martingale_multiplier: 1.3         # Position size multiplier on loss
+martingale_max_levels: 2           # Max martingale levels
+trailing_stop_enabled: true        # Enable trailing stop loss
+partial_take_profit: false         # Disabled for aggressive exits
+progressive_recovery: true         # Enable aggressive recovery mode
+
+# Advanced Features (v2.0+)
+ai_score_weight: 0.4              # Higher AI influence
+use_ml_prediction: false          # Machine learning prediction
+enable_event_manager: true        # Economic calendar integration
+enable_advanced_risk: true        # Kelly criterion + correlation
+enable_adaptive_strategy: true    # Market regime detection
+
+# Time Management
+check_interval: 20                # Seconds between strategy cycles
+time_stop_base: 480               # Longer time stop for recovery (8 min)
+
+# Position Sizing Adjustments
+win_streak_multiplier: 1.2        # Increase size on win streak (3+)
+loss_streak_multiplier: 0.7       # Decrease size on loss streak (2+)
+
+# Drawdown Protection
+max_drawdown_percent: 15.0        # Stop trading at -15% drawdown from peak
+
+# Symbols (more symbols for diversification)
+symbols:
+  - "BTCUSDT"
+  - "ETHUSDT"
+  - "BNBUSDT"
+  - "ADAUSDT"
+  - "SOLUSDT"
+  - "XRPUSDT"
+  - "DOTUSDT"
+  - "LINKUSDT"

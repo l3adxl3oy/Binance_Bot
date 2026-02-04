@@ -1,0 +1,45 @@
+# Safe Conservative Strategy v2.0
+# Low risk, high signal strength requirement
+# Suitable for: Beginners, risk-averse traders
+
+config_version: "2.0"
+strategy_name: "Safe Conservative"
+bot_type: "SCALPING"
+
+# Signal Configuration
+min_signal_strength: 4.5  # 0.0-5.0 (higher = safer, fewer trades)
+max_positions: 5          # Maximum concurrent positions
+max_active_symbols: 4     # Number of symbols to actively monitor
+position_size_percent: 1.0  # % of balance per trade
+
+# Risk Management
+risk_management:
+  atr_sl_multiplier: 1.5      # Stop loss distance (ATR multiplier)
+  atr_tp_multiplier: 4.0      # Take profit distance (ATR multiplier)
+  max_loss_per_trade: 0.1     # Max loss per trade (% of balance)
+  daily_profit_target: 2.0    # Daily profit goal (%)
+  max_daily_loss: 3.0         # Max daily loss limit (%)
+
+# Trading Features
+enable_martingale: false           # No position averaging on losses
+trailing_stop_enabled: true        # Enable trailing stop loss
+partial_take_profit: true          # Enable 3-tier TP system
+progressive_recovery: false        # No aggressive recovery mode
+
+# Advanced Features (v2.0+)
+ai_score_weight: 0.3              # Weight for AI sentiment (0.0-1.0)
+use_ml_prediction: false          # Machine learning prediction
+enable_event_manager: true        # Economic calendar integration
+enable_advanced_risk: true        # Kelly criterion + correlation
+enable_adaptive_strategy: true    # Market regime detection
+
+# Time Management
+check_interval: 20                # Seconds between strategy cycles
+time_stop_base: 150               # Base time stop (seconds)
+
+# Symbols (can be customized)
+symbols:
+  - "BTCUSDT"
+  - "ETHUSDT"
+  - "BNBUSDT"
+  - "ADAUSDT"

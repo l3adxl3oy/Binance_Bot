@@ -1,0 +1,36 @@
+# Railway deployment ignore file
+# Files/folders to exclude from deployment
+
+# Test files
+tests/
+pytest.ini
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Development files
+*.pyc
+__pycache__/
+.env.local
+.venv/
+venv/
+
+# Logs
+logs/*.log
+
+# Database files (use Railway PostgreSQL instead)
+*.db
+bot_database.db
+bot_state*.json
+
+# Documentation (optional - remove if you want docs on Railway)
+docs/
+README.md
+
+# IDE files
+.vscode/
+.idea/
+
+# Git files
+.git/
+.gitignore

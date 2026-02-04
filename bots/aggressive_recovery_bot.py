@@ -67,15 +67,22 @@ logger = logging.getLogger(__name__)
 class AggressiveRecoveryBot:
     """Aggressive Recovery Bot - Fast Profit + Smart Loss Recovery"""
     
-    def __init__(self):
+    def __init__(self, user_id: Optional[int] = None, config_dict: Optional[dict] = None):
+        """Initialize bot with optional user_id and config for multi-user support"""
+        self.user_id = user_id
+        self.config_override = config_dict
+        
         logger.info("="*80)
         logger.info(f"🔥 {BOT_NAME} v{__version__} - OPTIMIZED v2.1".center(80))
+        if user_id:
+            logger.info(f"👤 User ID: {user_id}".center(80))
         logger.info("="*80)
         logger.info("🎯 กลยุทธ์: เลือกเฉพาะสัญญาณดีที่สุด → ทำกำไร 5% → หยุดทันที".center(80))
         logger.info("="*80)
         
         # Track bot runtime
         self.start_time = datetime.now()
+        self.running = True
         
         # Binance client
         self.client = Spot(
@@ -998,6 +1005,11 @@ class AggressiveRecoveryBot:
                 f"Streak: {self.consecutive_wins}W/{self.consecutive_losses}L"
             )
     
+    def stop(self):
+        """Stop the bot gracefully"""
+        logger.info("🛑 Stopping bot...")
+        self.running = False
+    
     def run(self):
         """Main bot loop with aggressive timing"""
         self.running = True
@@ -1026,6 +1038,11 @@ class AggressiveRecoveryBot:
         
         finally:
             self.shutdown()
+    
+    def stop(self):
+        """Stop the bot gracefully"""
+        logger.info("🛑 Stopping bot...")
+        self.running = False
     
     def shutdown(self):
         """Cleanup and final reporting"""

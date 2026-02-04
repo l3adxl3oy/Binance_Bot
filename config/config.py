@@ -33,20 +33,33 @@ class Config:
     DEMO_MODE: bool = False  # เปลี่ยนเป็น True เพื่อใช้โหมดทดสอบ (ไม่เชื่อม Binance)
     
     # 📊 ระบบและเวลา
-    CHECK_INTERVAL: int = 30  # ตรวจสอบทุก 30 วินาที
+    CHECK_INTERVAL: int = 20  # ตรวจสอบทุก 20 วินาที (เร็วขึ้น = จับสัญญาณได้มากขึ้น)
     TIMEFRAME: str = "1m"  # ใช้กราฟ 1 นาที
     
-    # 📈 คู่เงินที่เทรด (Verified from Backtest)
+    # 📈 คู่เงินที่เทรด (Expanded Pool สำหรับ Aggressive Bot)
     SYMBOL_POOL: List[str] = [
+        # ⭐ Core Pairs (Backtest Verified)
         "BTCUSDT",   # ✅ Best: 68.75% WR
         "BNBUSDT",   # ✅ Explosive: +$10.25
         "ADAUSDT",   # ✅ Stable: 68.42% WR
         "SOLUSDT",   # ✅ Good: 63.16% WR
+        
+        # 🔥 High Volume Pairs (เพิ่ม Liquidity)
+        "ETHUSDT",   # High volume, stable trend
+        "XRPUSDT",   # Fast moves, good volatility
+        "DOGEUSDT",  # High volume, quick scalping
+        "DOTUSDT",   # Stable pattern
+        
+        # 💎 Volatile Pairs (โอกาสกำไรสูง)
+        "AVAXUSDT",  # Strong momentum
+        "MATICUSDT", # Active trading
+        "LINKUSDT",  # Good trend following
+        "ATOMUSDT",  # Decent volatility
     ]
     
     # 🎯 การจัดการ Position
-    MAX_TOTAL_POSITIONS: int = 4  # ออเดอร์สูงสุดพร้อมกัน
-    MAX_ACTIVE_SYMBOLS: int = 4  # เหรียญสูงสุดพร้อมกัน
+    MAX_TOTAL_POSITIONS: int = 10  # ออเดอร์สูงสุดพร้อมกัน (เพิ่มจาก 8)
+    MAX_ACTIVE_SYMBOLS: int = 6  # เหรียญสูงสุดพร้อมกัน (ปลอดภัยที่ 6)
     
     # ==================== INTELLIGENT SYSTEMS (เปิด/ปิดระบบอัจฉริยะ) ====================
     ENABLE_EVENT_MANAGER: bool = True  # ระบบติดตามข่าวและเหตุการณ์
@@ -75,13 +88,13 @@ class Config:
     # ==================== 🔥 AGGRESSIVE RECOVERY BOT SETTINGS ====================
     # กลยุทธ์: เทรดรวดเร็ว + กู้คืนขาดทุนอัจฉริยะ (v2.2 Original - Verified +13.19%)
     
-    # 💰 TP/SL Levels (Proven Profitable)
-    AGGRESSIVE_QUICK_TP: float = 1.2  # TP เร็ว 1.2%
-    AGGRESSIVE_MEDIUM_TP: float = 1.8  # TP กลาง 1.8%
-    AGGRESSIVE_STRONG_TP: float = 2.5  # TP แรง 2.5%
-    AGGRESSIVE_TIGHT_SL: float = 0.6  # SL แคบ 0.6%
-    AGGRESSIVE_MEDIUM_SL: float = 0.8  # SL กลาง 0.8%
-    AGGRESSIVE_WIDE_SL: float = 1.0  # SL กว้าง 1.0%
+    # 💰 TP/SL Levels (Optimized for More Entries + Safety)
+    AGGRESSIVE_QUICK_TP: float = 1.0  # TP เร็ว 1.0% (เร็วขึ้น = ล็อคกำไรเร็ว)
+    AGGRESSIVE_MEDIUM_TP: float = 1.5  # TP กลาง 1.5%
+    AGGRESSIVE_STRONG_TP: float = 2.2  # TP แรง 2.2%
+    AGGRESSIVE_TIGHT_SL: float = 0.5  # SL แคบ 0.5% (ปลอดภัยขึ้น)
+    AGGRESSIVE_MEDIUM_SL: float = 0.7  # SL กลาง 0.7%
+    AGGRESSIVE_WIDE_SL: float = 0.9  # SL กว้าง 0.9%
     
     # � Risk Management
     MAX_LOSS_PER_TRADE: float = 0.15  # เสี่ยงสูงสุด 0.15% ต่อเทรด
@@ -94,9 +107,9 @@ class Config:
     AGGRESSIVE_AVERAGING_DISTANCE: float = 0.3  # ระยะห่างเฉลี่ย 0.3%
     AGGRESSIVE_MAX_AVERAGING_TIMES: int = 0  # ไม่ทำ Averaging
     
-    # 🎯 Signal Quality (v2.2 Original - Very Selective)
-    AGGRESSIVE_MIN_SIGNAL_STRENGTH: float = 4.0  # คะแนนขั้นต่ำ 4.0/5.0
-    AGGRESSIVE_MIN_CONFLUENCE_SIGNALS: int = 4  # สัญญาณขั้นต่ำ 4 อัน
+    # 🎯 Signal Quality (ปรับให้สมดุลระหว่างจำนวนออเดอร์กับความปลอดภัย)
+    AGGRESSIVE_MIN_SIGNAL_STRENGTH: float = 2.5  # คะแนนขั้นต่ำ 2.5/5.0 (เพิ่มออเดอร์แต่ยังมีคุณภาพ)
+    AGGRESSIVE_MIN_CONFLUENCE_SIGNALS: int = 3  # สัญญาณขั้นต่ำ 3 อัน (คงที่)
     
     # 💎 Targets & Limits
     AGGRESSIVE_DAILY_TARGET: float = 5.0  # เป้ากำไร 5%/วัน
@@ -105,10 +118,10 @@ class Config:
     AGGRESSIVE_MAX_INTRADAY_DRAWDOWN: float = -15.0  # Drawdown สูงสุด -15%
     AGGRESSIVE_QUICK_PROFIT_LOCK: float = 3.0  # ล็อคกำไรที่ 3%
     
-    # ⏰ Timing (v2.2 Original)
-    AGGRESSIVE_TIME_STOP_FAST: int = 600  # หมดเวลา 10 นาที (600 วินาที)
-    AGGRESSIVE_TIME_STOP_RECOVERY: int = 900  # หมดเวลา Recovery 15 นาที
-    AGGRESSIVE_WIN_STREAK_BONUS: float = 1.3  # โบนัสชนะติด 1.3x
+    # ⏰ Timing (Optimized for Fast Trading)
+    AGGRESSIVE_TIME_STOP_FAST: int = 480  # หมดเวลา 8 นาที (เร็วขึ้น)
+    AGGRESSIVE_TIME_STOP_RECOVERY: int = 720  # หมดเวลา Recovery 12 นาที
+    AGGRESSIVE_WIN_STREAK_BONUS: float = 1.2  # โบนัสชนะติด 1.2x (ลดความเสี่ยง)
     AGGRESSIVE_LOSS_REDUCTION: float = 0.7  # ลดขนาดหลังแพ้ 0.7x
     
     # 🛡️ Trailing Stop (Aggressive Mode)

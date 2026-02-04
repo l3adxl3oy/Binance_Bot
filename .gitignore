@@ -33,11 +33,20 @@ env/
 *.swo
 *~
 
+# Environment variables (IMPORTANT!)
+.env
+.env.local
+.env.production
+
 # Bot specific
-# .env (uncommented for personal use - contains API keys)
 config/bot_state.json
 bot_state.json
 bot_state_aggressive.json
+
+# Database (local)
+*.db
+*.sqlite
+*.sqlite3
 
 # Backtest data and results
 backtest/data/*.csv
@@ -45,6 +54,7 @@ backtest/results/*.json
 
 # Logs
 *.log
+logs/*.log
 
 # OS
 .DS_Store

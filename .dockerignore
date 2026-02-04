@@ -1,0 +1,64 @@
+# .dockerignore - สำหรับ Railway deployment
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environments
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+logs/
+*.log
+
+# Data files (ไม่ต้อง deploy ขึ้น cloud)
+data/
+*.csv
+*.db
+*.sqlite
+
+# Backtest results
+backtest/results/
+backtest/reports/
+
+# Temporary files
+*.tmp
+tmp/
+
+# Documentation (ไม่จำเป็นต้อง deploy)
+docs/
+README.md
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Bot state files (ใช้ database แทน)
+bot_state_*.json
+
+# Windows batch files
+*.bat

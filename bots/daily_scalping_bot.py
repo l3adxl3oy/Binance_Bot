@@ -60,12 +60,19 @@ logger = logging.getLogger(__name__)
 class DailyScalpingBot:
     """Main Daily Scalping Bot - Multi-Symbol Edition"""
     
-    def __init__(self):
+    def __init__(self, user_id: Optional[int] = None, config_dict: Optional[dict] = None):
+        """Initialize bot with optional user_id and config for multi-user support"""
+        self.user_id = user_id
+        self.config_override = config_dict
+        self.running = True
+        
         logger.info("="*80)
         logger.info(f"🚀 {BOT_NAME} v{__version__}".center(80))
+        if user_id:
+            logger.info(f"👤 User ID: {user_id}".center(80))
         logger.info("="*80)
         logger.info(f"💼 โหมด: {'DEMO (ทดสอบปลอดภัย)' if Config.DEMO_MODE else 'LIVE ⚠️ เงินจริง!'}")
-        logger.info(f" Symbols: {len(Config.SYMBOL_POOL)} pool, {Config.MAX_ACTIVE_SYMBOLS} active")
+        logger.info(f"📊 Symbols: {len(Config.SYMBOL_POOL)} pool, {Config.MAX_ACTIVE_SYMBOLS} active")
         logger.info(f"⏱️  Timeframe: {Config.TIMEFRAME} (Scalping เร็ว)")
         logger.info(f"🎯 เป้าหมายรายวัน: +{Config.DAILY_PROFIT_TARGET}% ถึง +{Config.DAILY_MAX_TARGET}%")
         logger.info("-"*80)
@@ -1194,6 +1201,11 @@ class DailyScalpingBot:
         # ==================== CYCLE STATUS OUTPUT ====================
         self._display_cycle_status(active_symbols)
     
+    def stop(self):
+        """Stop the bot gracefully"""
+        logger.info("🛑 Stopping bot...")
+        self.running = False
+    
     def run(self):
         """Main bot loop"""
         self.running = True
@@ -1236,6 +1248,11 @@ class DailyScalpingBot:
         
         finally:
             self.shutdown()
+    
+    def stop(self):
+        """Stop the bot gracefully"""
+        logger.info("🛑 Stopping bot...")
+        self.running = False
     
     def _display_cycle_status(self, active_symbols: List[str]):
         """Display comprehensive cycle status with intelligent system info"""
